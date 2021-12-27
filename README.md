@@ -42,3 +42,45 @@
 
 - [ ] Preguntar a Nicolás si podemos usar `Pytorch`
 - [ ] Enviar un correo a Nicolás con la propuesta
+
+# Nueva propuesta para Nicolás
+
+- Solo hay que elegir BBDD
+1. FashionMNIST
+2. DermaMNIST
+3. BloodMNIST
+
+# Nuevo mensaje en PRADO
+
+a) Nombre de los participantes
+
+- Alejandro Borrego Mejías
+
+- Sergio Quijano Rey
+
+b) Titulo del proyecto y muy breve descripción de lo que se quiere lograr
+
+Título: Entrenamiento de una red siamesa, usando triplet loss, sobre el dataset FashionMNIST
+
+El objetivo del proyecto es aprender una representación del conjunto de datos, de forma que objetos similares tengan representación muy cercanas (en el sentido de la distancia euclídea) entre sí.
+
+Los elementos del dataset son imágenes 28x28 de distintos tipos de prendas de ropa, de la página web Zalando. En concreto, tenemos 10 tipos de ropa distintos.
+
+Para resolver el problema, realizaremos:
+
+1. Fase inicial de mining de triples difíciles
+
+2. Entrenamiento usando la función de pérdida triplet loss
+
+3. Evaluación, fijándonos en esta función de pérdida y considerando un problema de clasificación multiclase a partir del encoding producido por la red
+
+c) Base de datos de imágenes que se usará ( nombre y URL si tiene)
+
+Usaremos la base de datos FashionMNIST, que se puede consultar y descargar a partir del siguiente enlace: https://github.com/zalandoresearch/fashion-mnist.
+
+Como el cambio lo estamos haciendo por haber escogido previamente una base de datos ya usada por otros compañeros, proponemos bases de datos alternativas a la anterior en caso de ser esta rechazada. En todas ellas, tenemos el mismo problema multiclase. En orden de preferencia:
+
+1. FashionMNIST
+2. DermaMNIST (de MedMNIST)
+3. BloodMNIST (de MedMNIST)
+

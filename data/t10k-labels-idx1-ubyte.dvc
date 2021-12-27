@@ -1,0 +1,4 @@
+outs:
+- md5: 15d484375f8d13e6eb1aabb0c3f46965
+  size: 10008
+  path: t10k-labels-idx1-ubyte

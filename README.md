@@ -40,8 +40,11 @@
 
 # TODOs
 
-- [ ] Preguntar a Nicolás si podemos usar `Pytorch`
-- [ ] Enviar un correo a Nicolás con la propuesta
+- [x] Preguntar a Nicolás si podemos usar `Pytorch`
+- [x] Enviar un correo a Nicolás con la propuesta
+- [ ] Cargar los datos del problema
+- [ ] Conseguir un entorno de desarrollo funcional
+- [ ] Primer modelo básico
 
 # Nueva propuesta para Nicolás
 
@@ -83,4 +86,12 @@ Como el cambio lo estamos haciendo por haber escogido previamente una base de da
 1. FashionMNIST
 2. DermaMNIST (de MedMNIST)
 3. BloodMNIST (de MedMNIST)
+
+# Estructura de carpetas
+
+- `lib`:
+    - Almacena archivos `.py` que usamos como librería básica
+    - Con esto, evitamos escribir mucho código de `pytorch` en el notebook, y centramos el notebook en las tareas fundamentales a resolver
+- `Notebook.ipynb`
+    - Notebook donde realizamos el desarrollo del código
 

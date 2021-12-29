@@ -3,7 +3,8 @@
 - [x] Preguntar a Nicolás si podemos usar `Pytorch`
 - [x] Enviar un correo a Nicolás con la propuesta
 - [x] Conseguir un entorno de desarrollo funcional
-- [ ] Cargar los datos del problema
+- [x] Cargar los datos del problema
+- [ ] Conseguir que se carguen los archivos de la libreria
 - [ ] Primer modelo básico para calcular el embedding
     - [ ] Estaría bien descargarlo pre-entrenado, aunque tenemos tan pocos datos que se puede hacer el entrenamiento completo
 - [ ] Generación de triples aleatorios <- lo vamos usar de baseline

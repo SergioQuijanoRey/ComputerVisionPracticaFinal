@@ -33,6 +33,10 @@ def show_img(img: np.ndarray, color_format_range = (0, 255)):
     else:
         plt.imshow(img, vmin = color_format_range[0], vmax = color_format_range[1])
 
+    # Make it visible right now
+    # This is specially useful when working in Jupyter Notebooks
+    plt.show()
+
 def show_images(images, color_format_range = (0, 255), columns: int = 4):
     """
     Shows multiple images in one figure, using rows & cols layout

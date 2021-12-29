@@ -4,6 +4,7 @@ Module for displaying visualizations that are not included in tensorboard
 
 import matplotlib.pyplot as plt
 import numpy as np
+from typing import Tuple, List
 
 def is_black_and_white(img: np.ndarray) -> bool:
     """Checks if a given image is in color or in black & white format"""
@@ -79,7 +80,7 @@ def show_images(images, color_format_range = (0, 255), columns: int = 4):
     # Mostramos la composicion y espero en caso de estar en local
     plt.show()
 
-def show_images_with_titles_same_window(images, titles, columns = 4):
+def show_images_with_titles_same_window(images: List[np.ndarray], titles: List[str], columns: int = 4, figsize: Tuple[int, int] = None):
     """
     Muestra varias imagenes con sus respectivos titulos en una misma ventana
 
@@ -93,11 +94,11 @@ def show_images_with_titles_same_window(images, titles, columns = 4):
         https://stackoverflow.com/a/41011910
 
 
-    Parameters:
-    ===========
-    images: lista de imagenes que queremos representar
-    titles: titulos respectivos de las imagenes que queremos representar
-            Debe tener el mismo tamaño que la lista de imagenes
+    @param images: lista de imagenes que queremos representar
+    @param titles: titulos respectivos de las imagenes que queremos representar
+                   Debe tener el mismo tamaño que la lista de imagenes
+    @param figsize: tamaño de cada imagen. Si no se especifica (None) se da un
+                    valor por defecto
     """
 
     # Comprobacion de seguridad
@@ -107,7 +108,8 @@ def show_images_with_titles_same_window(images, titles, columns = 4):
         raise Exception(err_msg)
 
     # Tamaño de cada imagen que mostramos en el mosaico
-    fig = plt.figure(figsize=(15, 15))
+    if figsize is None: figsize = (15, 15)
+    fig = plt.figure(figsize=figsize)
 
     # Calculamos el numero de filas necesarias para nuestras imagenes que depende
     # de la cantidad de imagenes que tengamos y del numero de columnas establecido

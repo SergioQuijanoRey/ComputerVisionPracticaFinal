@@ -38,21 +38,23 @@ def show_img(img: np.ndarray, color_format_range = (0, 255)):
     # This is specially useful when working in Jupyter Notebooks
     plt.show()
 
-def show_images(images, color_format_range = (0, 255), columns: int = 4):
+def show_images(images: List[np.ndarray], color_format_range: Tuple[int, int] = (0, 255), columns: int = 4, figsize: Tuple[int, int] = None):
     """
     Shows multiple images in one figure, using rows & cols layout
 
     TODO -- color_format_range implies that all images must have same color range
 
-    Parameters:
-    ===========
-    images: list of images to be displayed
-    color_format_range: range for the colors, ie. [0, 255]
-    columns: number of columns of the layout
+    @param images: list of images to be displayed
+    @param color_format_range: range for the colors, ie. [0, 255]
+    @param columns: number of columns of the layout
+    @param figsize: size of the window to show the img
+                    If None, default figsize is set
     """
 
     # Tamaño de cada imagen que mostramos en el mosaico
-    fig = plt.figure(figsize=(15, 15))
+    # Si no se pasa por parametro, usamos un valor por defecto
+    if figsize is None: figsize = (15, 15)
+    fig = plt.figure(figsize=figsize)
 
     # Calculamos el numero de filas necesarias para nuestras imagenes que depende
     # de la cantidad de imagenes que tengamos y del numero de columnas establecido
@@ -108,6 +110,7 @@ def show_images_with_titles_same_window(images: List[np.ndarray], titles: List[s
         raise Exception(err_msg)
 
     # Tamaño de cada imagen que mostramos en el mosaico
+    # Si no se pasa por parametro el valor, tomamos un figsize por defecto
     if figsize is None: figsize = (15, 15)
     fig = plt.figure(figsize=figsize)
 
@@ -136,6 +139,3 @@ def show_images_with_titles_same_window(images: List[np.ndarray], titles: List[s
 
     # Mostramos la composicion y espero en caso de estar en local
     plt.show()
-    if running_env == "local":
-        wait_for_user_input()
-

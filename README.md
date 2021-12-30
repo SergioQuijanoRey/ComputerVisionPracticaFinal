@@ -9,7 +9,7 @@
     - [ ] Estaría bien descargarlo pre-entrenado, aunque tenemos tan pocos datos que se puede hacer el entrenamiento completo
 - [ ] Generación de triples aleatorios <- lo vamos usar de baseline
     - [x] Generar las listas con las posiciones por separado
-    - [ ] Tomar el anchor, positive y negative adecuadamente
+    - [x] Tomar el anchor, positive y negative adecuadamente
     - [ ] Arreglar error con `__getitem__`
 - [ ] **Cachear procesos de calculo de datos**
 - [ ] Entrenamiento de la red usando triples aleatorios

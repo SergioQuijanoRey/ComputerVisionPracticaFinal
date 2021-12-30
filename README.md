@@ -11,6 +11,7 @@
     - [x] Generar las listas con las posiciones por separado
     - [ ] Tomar el anchor, positive y negative adecuadamente
     - [ ] Arreglar error con `__getitem__`
+- [ ] **Cachear procesos de calculo de datos**
 - [ ] Entrenamiento de la red usando triples aleatorios
 - [ ] Adaptar la red para una tarea de clasificación usando K-NN por ejemplo
 - [ ] Cálculo de triples difíciles

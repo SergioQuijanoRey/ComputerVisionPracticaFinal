@@ -12,12 +12,12 @@
     - [x] Tomar el anchor, positive y negative adecuadamente
     - [x] Arreglar error con `__getitem__`
 - [x] Entrenamiento de la red usando triples aleatorios
+- [x] Adaptar ResNet18 o buscar un modelo pre-entrenado adecuado 
 - [ ] **Cachear procesos de calculo de datos**
 - [ ] Adaptar la red para una tarea de clasificación usando K-NN por ejemplo
 - [ ] Cálculo de triples difíciles <--
 - [ ] Hablar con Nicolás de la base de datos
 - [ ] Poner un logger que muestre la evolución de las métricas correctamente
-- [ ] Adaptar ResNet18 o buscar un modelo pre-entrenado adecuado <-- 
 - [ ] Función para evaluar el modelo en el conjunto de test <--
 - [ ] Entrenamiento y validación
     - [ ] Separar entrenamiento en entrenamiento y validacion

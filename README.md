@@ -6,16 +6,23 @@
 - [x] Cargar los datos del problema
 - [x] Conseguir que se carguen los archivos de la libreria
 - [x] Primer modelo básico para calcular el embedding
-    - [ ] Estaría bien descargarlo pre-entrenado, aunque tenemos tan pocos datos que se puede hacer el entrenamiento completo
-- [ ] Generación de triples aleatorios <- lo vamos usar de baseline
+    - [x] Estaría bien descargarlo pre-entrenado, aunque tenemos tan pocos datos que se puede hacer el entrenamiento completo
+- [x] Generación de triples aleatorios <- lo vamos usar de baseline
     - [x] Generar las listas con las posiciones por separado
     - [x] Tomar el anchor, positive y negative adecuadamente
-    - [ ] Arreglar error con `__getitem__`
+    - [x] Arreglar error con `__getitem__`
+- [x] Entrenamiento de la red usando triples aleatorios
 - [ ] **Cachear procesos de calculo de datos**
-- [ ] Entrenamiento de la red usando triples aleatorios
 - [ ] Adaptar la red para una tarea de clasificación usando K-NN por ejemplo
-- [ ] Cálculo de triples difíciles
+- [ ] Cálculo de triples difíciles <--
 - [ ] Hablar con Nicolás de la base de datos
+- [ ] Poner un logger que muestre la evolución de las métricas correctamente
+- [ ] Adaptar ResNet18 o buscar un modelo pre-entrenado adecuado <-- 
+- [ ] Función para evaluar el modelo en el conjunto de test <--
+- [ ] Entrenamiento y validación
+    - [ ] Separar entrenamiento en entrenamiento y validacion
+    - [ ] En el bucle de entrenamiento mostrar las metricas para validación también
+- [ ] Pasar el bucle de entrenamiento a la librería para limpiar algo el notebook
 
 # Decisión del problema a resolver
 

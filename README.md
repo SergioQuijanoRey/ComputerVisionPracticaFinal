@@ -25,6 +25,7 @@
 - [ ] Función para evaluar el modelo en el conjunto de test <--
 - [ ] Pasar el bucle de entrenamiento a la librería para limpiar algo el notebook
 - [ ] Estaría bien dividir el train en train / val con **estratificación**
+- [ ] Mostrar en la memoria el cambio que supone cambiar la ultima FC
 
 # Decisión del problema a resolver
 

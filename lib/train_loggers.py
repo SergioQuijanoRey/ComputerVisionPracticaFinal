@@ -5,6 +5,8 @@ from torch.utils.data import DataLoader
 from torch import nn
 import numpy as np
 
+from typing import Tuple
+
 import core
 import board
 import metrics
@@ -154,7 +156,7 @@ class TripletLogger(TrainLogger):
         self.loss_func = loss_func
         self.net = net
 
-    def log_process(self, train_loader: DataLoader, validation_loader: DataLoader, epoch: int, iteration: int) -> None:
+    def log_process(self, train_loader: DataLoader, validation_loader: DataLoader, epoch: int, iteration: int) -> Tuple[float, float]:
         # Empezamos calculando las metricas que queremos mostrar
 
         # Para tener mas eficiencia en inferencia
@@ -178,6 +180,9 @@ class TripletLogger(TrainLogger):
         print(f"\tTraining loss: {mean_train_loss}")
         print(f"\tValidation loss: {mean_val_loss}")
         print("")
+
+        # Devolvemos las funciones de perdida
+        return mean_train_loss, mean_val_loss
 
     def should_log(self, iteration: int) -> bool:
         if iteration % self.iterations == 0 and iteration != 0:

@@ -143,7 +143,7 @@ def train_model(
     name: str = "Model",
     logger: TrainLogger = None,
     snapshot_iterations: int = None
-) -> None:
+) -> dict:
     """
     Trains and saves a neural net
 
@@ -169,7 +169,7 @@ def train_model(
     lr = parameters["lr"]
     criterion = parameters["criterion"]
     
-    # Usamos adam como optimizador
+    # Use Adam as optimizer
     optimizer = optim.Adam(net.parameters(), lr = lr)
 
     # Select proper device and move the net to that device
@@ -184,6 +184,11 @@ def train_model(
     # Printing where we're training
     print(f"==> Training on device {device}")
     print("")
+
+    # Dict where we are going to save the training history
+    training_history = dict()
+    training_history["loss"] = []
+    training_history["val_loss"] = []
 
     # Training the network
     epochs = parameters["epochs"]
@@ -206,7 +211,12 @@ def train_model(
             # iteration counter in inner loop. Otherwise logs are going to be non-uniform over iterations
             curr_it = epoch * len(train_loader.dataset) + i * train_loader.batch_size
             if logger.should_log(curr_it):
-                logger.log_process(train_loader, validation_loader, epoch, i)
+                # Log and return loss from training and validation
+                training_loss, validation_loss = logger.log_process(train_loader, validation_loader, epoch, i)
+
+                # Save loss of training and validation sets
+                training_history["loss"].append(training_loss)
+                training_history["val_loss"].append(validation_loss)
 
             # Snapshots -- same as Statistics, we reuse current iteration calc
             # TODO -- create a SnapshotTaker class as we have for logs -- snapshot_taker.should_log(i)
@@ -218,8 +228,11 @@ def train_model(
 
     print("Finished training")
 
+
     # Save the model -- use name + date stamp to save the model
     date = get_datetime_str()
     name = name + "==" + date
     filesystem.save_model(net = net, folder_path = path, file_name = name)
 
+    # Return the training hist
+    return training_history

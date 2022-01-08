@@ -164,47 +164,7 @@ class TripletLogger(TrainLogger):
         self.tensorboardwriter = board.get_writer(name = self.name)
 
     def log_process(self, train_loader: DataLoader, validation_loader: DataLoader, epoch: int, iteration: int) -> None:
-        # For more performance
-        with torch.no_grad():
-
-            # Even more performance
-            self.net.eval()
-
-            # Trainning loss and accuracy
-            max_examples = int(len(train_loader.dataset) * self.training_perc)
-            mean_train_loss = metrics.calculate_mean_triplet_loss(self.net, train_loader, max_examples, self.loss_func)
-
-            # Validation loss and accuracy
-            max_examples = int(len(validation_loader.dataset) * self.training_perc)
-            mean_val_loss = metrics.calculate_mean_triplet_loss(self.net, validation_loader, max_examples, self.loss_func)
-
-        # Set again net to training mode
-        self.net.train()
-
-        # Output to the user
-        # We don't care about epochs starting in 0, but with iterations is weird
-        # ie. epoch 0 it 199 instead of epoch 0 it 200
-        print(f"[{epoch} / {iteration}]")
-        print(f"Training loss: {mean_train_loss}")
-        print(f"Validation loss: {mean_val_loss}")
-        print("")
-
-        # Sending this metrics to tensorboard
-        curr_it = iteration * train_loader.batch_size + epoch * len(train_loader.dataset) # The current iteration taking in count
-                                                                # that we reset iterations at the end
-                                                                # of each epoch
-
-        # Send data to tensorboard
-        # We use side-by-side training / validation graphics
-        self.tensorboardwriter.add_scalars(                         # Have train / val loss in same graph to compare
-            "Training/Validation Loss",
-            {
-                "Training loss": mean_train_loss,
-                "Validation loss": mean_val_loss,
-            },
-            curr_it
-        )
-        self.tensorboardwriter.flush() # Make sure that writer writes to disk
+        print(f"Entrenando epoca {epoch} iteracion {iteration}")
 
     def should_log(self, iteration: int) -> bool:
         if iteration % self.iterations == 0:

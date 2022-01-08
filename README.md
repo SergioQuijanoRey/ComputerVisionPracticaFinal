@@ -13,16 +13,17 @@
     - [x] Arreglar error con `__getitem__`
 - [x] Entrenamiento de la red usando triples aleatorios
 - [x] Adaptar ResNet18 o buscar un modelo pre-entrenado adecuado 
+- [x] Poner un logger que muestre la evolución de las métricas correctamente
 - [ ] **Cachear procesos de calculo de datos**
 - [ ] Adaptar la red para una tarea de clasificación usando K-NN por ejemplo
 - [ ] Cálculo de triples difíciles <--
 - [ ] Hablar con Nicolás de la base de datos
-- [ ] Poner un logger que muestre la evolución de las métricas correctamente
 - [ ] Función para evaluar el modelo en el conjunto de test <--
 - [ ] Entrenamiento y validación
     - [ ] Separar entrenamiento en entrenamiento y validacion
     - [ ] En el bucle de entrenamiento mostrar las metricas para validación también
 - [ ] Pasar el bucle de entrenamiento a la librería para limpiar algo el notebook
+- [ ] Mostrar las curvas de entrenamiento
 
 # Decisión del problema a resolver
 

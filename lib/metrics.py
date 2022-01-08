@@ -3,6 +3,7 @@
 import torch
 from torch.utils.data import DataLoader
 from torch import nn
+import numpy as np
 
 import core
 
@@ -82,7 +83,7 @@ def calculate_accuracy(net: nn.Module, data_loader: DataLoader, max_examples: in
     acc = correct_predictions / curr_examples * 100.0
     return acc
 
-def calculate_mean_triplet_loss(net: nn.Module, data_loader: DataLoader, max_examples: int, loss_function) -> float:
+def calculate_mean_triplet_loss(net: nn.Module, data_loader: DataLoader, loss_function) -> float:
     """
     Calculates mean loss over a data set, for a triplet-like loss
 
@@ -99,26 +100,21 @@ def calculate_mean_triplet_loss(net: nn.Module, data_loader: DataLoader, max_exa
     mean_loss: the mean of the loss over seen examples
     """
 
-    curr_examples = 0
+    # Get device where we are training 
+    device = core.get_device()
+
+    # Calculate loss in the given dataset
     acumulated_loss = 0.0
     for data in data_loader:
 
-        # Unwrap the given data
-        anchor, positive, negative = data
-
         # Calculate embeddings
-        anchor_embedding = net(anchor)
-        positive_embedding = net(positive)
-        negative_embedding = net(negative)
+        # Put them together in one batch 
+        batch = [net(item[None, ...].to(device)) for item in data]
 
         # Calculate loss
-        acumulated_loss += loss_function(anchor_embedding, positive_embedding, negative_embedding)
+        acumulated_loss += loss_function(batch)
 
-        # Update seen examples and check for stop condition
-        curr_examples += anchor.size(0)
-        if curr_examples >= max_examples:
-            break
 
-    mean_loss = acumulated_loss / curr_examples
+    mean_loss = acumulated_loss / len(data_loader.dataset)
     return mean_loss
 

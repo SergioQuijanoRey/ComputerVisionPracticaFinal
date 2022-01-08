@@ -140,7 +140,7 @@ class TripletLogger(TrainLogger):
     Custom logger for triplet training
     """
 
-    def __init__(self, net: nn.Module, iterations, loss_func, training_perc: float = 1.0, validation_perc: float = 1.0):
+    def __init__(self, net: nn.Module, iterations, loss_func):
         """
         Initializes the logger
 
@@ -149,25 +149,38 @@ class TripletLogger(TrainLogger):
         net: the net we are testing
         iterations: how many iterations we have to wait to log again
         loss_func: the loss func we are using to train <- Should be some triplet-like loss
-        training_perc: the percentage of the training set we are going to use to compute metrics
-        validation_perc: the percentage of the validation set we are going to use to compute metrics
-        tensorboardwriter: writer to tensorboard logs
         """
         self.iterations = iterations
         self.loss_func = loss_func
         self.net = net
-        self.training_perc = training_perc
-        self.validation_perc = validation_perc
-
-        # Tensorboard named with the date/time stamp
-        self.name = core.get_datetime_str()
-        self.tensorboardwriter = board.get_writer(name = self.name)
 
     def log_process(self, train_loader: DataLoader, validation_loader: DataLoader, epoch: int, iteration: int) -> None:
-        print(f"Entrenando epoca {epoch} iteracion {iteration}")
+        # Empezamos calculando las metricas que queremos mostrar
+
+        # Para tener mas eficiencia en inferencia
+        with torch.no_grad():
+
+            # Para tener todavia mas eficiencia en inferencia
+            self.net.eval()
+
+            # Funcion de perdida en entrenamiento
+            mean_train_loss = metrics.calculate_mean_triplet_loss(self.net, train_loader, self.loss_func)
+
+            # Funcion de perdida en validacion
+            mean_val_loss = metrics.calculate_mean_triplet_loss(self.net, validation_loader, self.loss_func)
+
+
+        # Volvemos a poner la red en modo entrenamiento
+        self.net.train()
+
+        # Mostramos las metricas obtenidas
+        print(f"[{epoch} / {iteration}]")
+        print(f"\tTraining loss: {mean_train_loss}")
+        print(f"\tValidation loss: {mean_val_loss}")
+        print("")
 
     def should_log(self, iteration: int) -> bool:
-        if iteration % self.iterations == 0:
+        if iteration % self.iterations == 0 and iteration != 0:
             return True
 
         return False

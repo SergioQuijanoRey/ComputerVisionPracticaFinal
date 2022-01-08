@@ -167,11 +167,10 @@ def train_model(
 
     # Loss and optimizer
     lr = parameters["lr"]
-    momentum = parameters["momentum"]
     criterion = parameters["criterion"]
     
-    # TODO -- usar ADAM en vez de SGD
-    optimizer = optim.SGD(net.parameters(), lr = lr, momentum = momentum)
+    # Usamos adam como optimizador
+    optimizer = optim.Adam(net.parameters(), lr = lr)
 
     # Select proper device and move the net to that device
     device = get_device()

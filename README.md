@@ -19,13 +19,19 @@
     - [x] Separar entrenamiento en entrenamiento y validacion
     - [x] En el bucle de entrenamiento mostrar las metricas para validación también
 - [x] Pasar el bucle de entrenamiento a la librería para limpiar algo el notebook
+- [x] Función para evaluar el modelo en el conjunto de test
 - [ ] **Cachear procesos de calculo de datos**
 - [ ] Adaptar la red para una tarea de clasificación usando K-NN por ejemplo
 - [ ] Cálculo de triples difíciles <--
 - [ ] Hablar con Nicolás de la base de datos
-- [ ] Función para evaluar el modelo en el conjunto de test <--
 - [ ] Estaría bien dividir el train en train / val con **estratificación**
 - [ ] Mostrar en la memoria el cambio que supone cambiar la ultima FC
+- [ ] Añadir métricas adicionales
+    - [ ] Distancia intracluster
+    - [ ] Distancia intercluster
+    - [ ] Silhouette de los clusters obtenidos
+    - [ ] Accuracy
+- [ ] Gráfica con el embedding obtenido
 
 # Decisión del problema a resolver
 

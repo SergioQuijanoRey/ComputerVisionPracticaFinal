@@ -11,6 +11,7 @@ import os
 import board
 import filesystem
 from train_loggers import TrainLogger, SilentLogger
+import metrics
 
 def imshow(img):
     img = img / 2 + 0.5     # unnormalize
@@ -19,7 +20,7 @@ def imshow(img):
     plt.show()
 
 # TODO -- use metrics module to calculate this metrics
-def test_model(model: nn.Module, test_loader: torch.utils.data.DataLoader, classes: list):
+def test_model(model: nn.Module, test_loader: torch.utils.data.DataLoader, loss_function):
     """
     Loads a neural net to make predictions
 
@@ -27,67 +28,11 @@ def test_model(model: nn.Module, test_loader: torch.utils.data.DataLoader, class
     ===========
     model: model that we want to test
     test_loader: pytorch data loader wrapping test data
-    classes: list having the names of the different classes we're working with
+    loss_function: loss funct used to evaluate the model
     """
 
-    # Get current device
-    device = get_device()
-
-    # Move to GPU if needed
-    model.to(device)
-
-    # Make predictions over test dataset
-    dataiter = iter(test_loader)
-    images, labels = dataiter.next()
-
-    # Calculate accuracy of the model
-    correct = 0
-    total = 0
-
-    # since we're not training, we don't need to calculate the gradients for our outputs
-    with torch.no_grad():
-        for data in test_loader:
-
-            # Unpack a test data minibatch
-            # Then, calculate outputs
-            images, labels = unwrap_data(data)
-
-            outputs = model(images)
-            _, predicted = torch.max(outputs.data, 1)
-
-            # Update metrics
-            total += labels.size(0)
-            correct += (predicted == labels).sum().item()
-
-    print(f'Accuracy of the network on {len(test_loader)} test images: %d %%' % (
-        100 * correct / total))
-
-    # prepare to count predictions for each class
-    correct_pred = {classname: 0 for classname in classes}
-    total_pred = {classname: 0 for classname in classes}
-
-    # again no gradients needed
-    with torch.no_grad():
-        for data in test_loader:
-
-            # Unpack minibatch and calculate outputs
-            images, labels = unwrap_data(data)
-
-            outputs = model(images)
-            _, predictions = torch.max(outputs, 1)
-
-            # collect the correct predictions for each class
-            for label, prediction in zip(labels, predictions):
-                if label == prediction:
-                    correct_pred[classes[label]] += 1
-                total_pred[classes[label]] += 1
-
-
-    # print accuracy for each class
-    for classname, correct_count in correct_pred.items():
-        accuracy = 100 * float(correct_count) / total_pred[classname]
-        print("Accuracy for class {:5s} is: {:.1f} %".format(classname,
-                                                       accuracy))
+    test_loss = metrics.calculate_mean_triplet_loss(model, test_loader, loss_function)
+    print(f"Test Loss: {test_loss}")
 
 def split_train_test(dataset, train_percentage: float = 0.8):
     """

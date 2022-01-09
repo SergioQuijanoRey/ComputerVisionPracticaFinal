@@ -22,16 +22,18 @@
 - [x] Función para evaluar el modelo en el conjunto de test
 - [x] Adaptar la red para una tarea de clasificación usando K-NN por ejemplo
 - [x] Gráfica con el embedding obtenido
+- [x] Métricas básicas de clasificación
+    - [x] Accuracy
+    - [x] ROC AUC
 - [ ] **Cachear procesos de calculo de datos**
 - [ ] Cálculo de triples difíciles <--
 - [ ] Hablar con Nicolás de la base de datos
 - [ ] Estaría bien dividir el train en train / val con **estratificación**
 - [ ] Mostrar en la memoria el cambio que supone cambiar la ultima FC
-- [ ] Añadir métricas adicionales
+- [ ] Añadir métricas adicionales para el embedding
     - [ ] Distancia intracluster
     - [ ] Distancia intercluster
     - [ ] Silhouette de los clusters obtenidos
-    - [ ] Accuracy
 
 # Decisión del problema a resolver
 

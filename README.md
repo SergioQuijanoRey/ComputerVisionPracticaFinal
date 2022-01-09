@@ -33,7 +33,7 @@
 - [ ] Añadir métricas adicionales para el embedding
     - [ ] Distancia intracluster
     - [ ] Distancia intercluster
-    - [ ] Silhouette de los clusters obtenidos
+    - [x] Silhouette de los clusters obtenidos
 
 # Decisión del problema a resolver
 

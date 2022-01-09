@@ -21,6 +21,7 @@
 - [x] Pasar el bucle de entrenamiento a la librería para limpiar algo el notebook
 - [x] Función para evaluar el modelo en el conjunto de test
 - [x] Adaptar la red para una tarea de clasificación usando K-NN por ejemplo
+- [x] Gráfica con el embedding obtenido
 - [ ] **Cachear procesos de calculo de datos**
 - [ ] Cálculo de triples difíciles <--
 - [ ] Hablar con Nicolás de la base de datos
@@ -31,7 +32,6 @@
     - [ ] Distancia intercluster
     - [ ] Silhouette de los clusters obtenidos
     - [ ] Accuracy
-- [ ] Gráfica con el embedding obtenido
 
 # Decisión del problema a resolver
 

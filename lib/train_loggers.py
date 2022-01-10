@@ -137,7 +137,7 @@ class SilentLogger(TrainLogger):
         # Always return false in order to never log
         return False
 
-class TripletLogger(TrainLogger):
+class TripletLoggerOffline(TrainLogger):
     """
     Custom logger for triplet training
     """
@@ -157,6 +157,10 @@ class TripletLogger(TrainLogger):
         self.net = net
 
     def log_process(self, train_loader: DataLoader, validation_loader: DataLoader, epoch: int, iteration: int) -> Tuple[float, float]:
+
+        # Seleccionamos la funcion de perdida 
+        metric =  metrics.calculate_mean_triplet_loss_offline
+
         # Empezamos calculando las metricas que queremos mostrar
 
         # Para tener mas eficiencia en inferencia
@@ -166,10 +170,10 @@ class TripletLogger(TrainLogger):
             self.net.eval()
 
             # Funcion de perdida en entrenamiento
-            mean_train_loss = metrics.calculate_mean_triplet_loss(self.net, train_loader, self.loss_func)
+            mean_train_loss = metric(self.net, train_loader, self.loss_func)
 
             # Funcion de perdida en validacion
-            mean_val_loss = metrics.calculate_mean_triplet_loss(self.net, validation_loader, self.loss_func)
+            mean_val_loss = metric(self.net, validation_loader, self.loss_func)
 
 
         # Volvemos a poner la red en modo entrenamiento
@@ -177,6 +181,76 @@ class TripletLogger(TrainLogger):
 
         # Mostramos las metricas obtenidas
         print(f"[{epoch} / {iteration}]")
+        print(f"\tTraining loss: {mean_train_loss}")
+        print(f"\tValidation loss: {mean_val_loss}")
+        print("")
+
+        # Devolvemos las funciones de perdida
+        return mean_train_loss, mean_val_loss
+
+    def should_log(self, iteration: int) -> bool:
+        if iteration % self.iterations == 0 and iteration != 0:
+            return True
+
+        return False
+
+
+
+class TripletLoggerOnline(TrainLogger):
+    """
+    Custom logger for triplet training
+    """
+
+    def __init__(self, net: nn.Module, iterations, loss_func, train_percentage = 1.0, validation_percentage = 1.0):
+        """
+        Initializes the logger
+
+        Parameters:
+        ===========
+        net: the net we are testing
+        iterations: how many iterations we have to wait to log again
+        loss_func: the loss func we are using to train <- Should be some triplet-like loss
+        """
+        self.iterations = iterations
+        self.loss_func = loss_func
+        self.net = net
+
+        self.train_percentage = train_percentage
+        self.validation_percentage = validation_percentage
+
+    def log_process(self, train_loader: DataLoader, validation_loader: DataLoader, epoch: int, iteration: int) -> Tuple[float, float]:
+        
+        # Este log puede ser muy lento asi que mostramos este mensaje
+        # en primer lugar para tener nocion de lo que tarda el logger
+        print(f"[{epoch} / {iteration}]")
+
+        # Seleccionamos la funcion de perdida 
+        metric =  metrics.calculate_mean_triplet_loss_online
+
+        # Calculamos el numero maximo de ejemplos que evaluar
+        train_max_examples = int(len(train_loader.dataset) * self.train_percentage)
+        validation_max_examples = int(len(validation_loader.dataset) * self.validation_percentage)
+
+
+        # Empezamos calculando las metricas que queremos mostrar
+
+        # Para tener mas eficiencia en inferencia
+        with torch.no_grad():
+
+            # Para tener todavia mas eficiencia en inferencia
+            self.net.eval()
+
+            # Funcion de perdida en entrenamiento
+            mean_train_loss = metric(self.net, train_loader, self.loss_func, train_max_examples)
+
+            # Funcion de perdida en validacion
+            mean_val_loss = metric(self.net, validation_loader, self.loss_func, validation_max_examples)
+
+
+        # Volvemos a poner la red en modo entrenamiento
+        self.net.train()
+
+        # Mostramos las metricas obtenidas
         print(f"\tTraining loss: {mean_train_loss}")
         print(f"\tValidation loss: {mean_val_loss}")
         print("")

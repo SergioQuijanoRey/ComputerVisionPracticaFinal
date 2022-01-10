@@ -25,8 +25,9 @@
 - [x] Métricas básicas de clasificación
     - [x] Accuracy
     - [x] ROC AUC
+- [x] Cálculo de triples difíciles <--
+- [ ] Optimizar el calculo de loss online <--
 - [ ] **Cachear procesos de calculo de datos**
-- [ ] Cálculo de triples difíciles <--
 - [ ] Hablar con Nicolás de la base de datos
 - [ ] Estaría bien dividir el train en train / val con **estratificación**
 - [ ] Mostrar en la memoria el cambio que supone cambiar la ultima FC

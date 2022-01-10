@@ -26,7 +26,9 @@
     - [x] Accuracy
     - [x] ROC AUC
 - [x] Cálculo de triples difíciles <--
-- [ ] Optimizar el calculo de loss online <--
+- [x] Optimizar el calculo de loss online <--
+- [ ] Usar memoization para el calculo de las distancias
+- [ ] Revisar el codigo de aleatorios porque lo hemos podido romper
 - [ ] **Cachear procesos de calculo de datos**
 - [ ] Hablar con Nicolás de la base de datos
 - [ ] Estaría bien dividir el train en train / val con **estratificación**

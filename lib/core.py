@@ -274,6 +274,8 @@ def train_model_online(
                 # Save loss of training and validation sets
                 training_history["loss"].append(training_loss)
                 training_history["val_loss"].append(validation_loss)
+            else:
+                print(f"[{epoch} / {curr_it}]")
 
             # Snapshots -- same as Statistics, we reuse current iteration calc
             # TODO -- create a SnapshotTaker class as we have for logs -- snapshot_taker.should_log(i)
@@ -282,6 +284,7 @@ def train_model_online(
                 snapshot_name = "snapshot_" + name + "==" + get_datetime_str()
                 snapshot_folder = os.path.join(path, "snapshots")
                 filesystem.save_model(net, folder_path = snapshot_folder, file_name = snapshot_name)
+
 
     print("Finished training")
 

@@ -27,7 +27,7 @@
     - [x] ROC AUC
 - [x] Cálculo de triples difíciles <--
 - [x] Optimizar el calculo de loss online <--
-- [ ] Usar memoization para el calculo de las distancias
+- [x] Usar memoization para el calculo de las distancias
 - [ ] Revisar el codigo de aleatorios porque lo hemos podido romper
 - [ ] **Cachear procesos de calculo de datos**
 - [ ] Hablar con Nicolás de la base de datos

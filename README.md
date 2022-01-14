@@ -12,7 +12,7 @@
     - [x] Tomar el anchor, positive y negative adecuadamente
     - [x] Arreglar error con `__getitem__`
 - [x] Entrenamiento de la red usando triples aleatorios
-- [x] Adaptar ResNet18 o buscar un modelo pre-entrenado adecuado 
+- [x] Adaptar ResNet18 o buscar un modelo pre-entrenado adecuado
 - [x] Poner un logger que muestre la evolución de las métricas correctamente
 - [x] Mostrar las curvas de entrenamiento
 - [x] Entrenamiento y validación
@@ -28,9 +28,8 @@
 - [x] Cálculo de triples difíciles <--
 - [x] Optimizar el calculo de loss online <--
 - [x] Usar memoization para el calculo de las distancias
-- [ ] Revisar el codigo de aleatorios porque lo hemos podido romper
-- [ ] **Cachear procesos de calculo de datos**
-- [ ] Hablar con Nicolás de la base de datos
+- [x] Revisar el codigo de aleatorios porque lo hemos podido romper
+- [ ] Hacer hyperparameter tuning de alguna forma
 - [ ] Estaría bien dividir el train en train / val con **estratificación**
 - [ ] Mostrar en la memoria el cambio que supone cambiar la ultima FC
 - [ ] Añadir métricas adicionales para el embedding

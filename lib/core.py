@@ -30,10 +30,25 @@ def test_model(model: nn.Module, test_loader: torch.utils.data.DataLoader, loss_
     test_loader: pytorch data loader wrapping test data
     loss_function: loss funct used to evaluate the model
     """
-    metric = metrics.calculate_mean_triplet_loss_online if online else metrics.calculate_mean_triplet_loss_offline
+    metric = metrics.calculate_mean_triplet_loss_offline
 
     test_loss = metric(model, test_loader, loss_function)
     print(f"Test Loss: {test_loss}")
+
+def test_model_online(model: nn.Module, test_loader: torch.utils.data.DataLoader, loss_function, online = False):
+    """
+    Loads a neural net to make predictions
+
+    Parameters:
+    ===========
+    model: model that we want to test
+    test_loader: pytorch data loader wrapping test data
+    loss_function: loss funct used to evaluate the model
+    """
+    metric = metrics.calculate_mean_triplet_loss_online 
+    test_loss = metric(model, test_loader, loss_function, 1.0)
+    print(f"Test Loss: {test_loss}")
+
 
 def split_train_test(dataset, train_percentage: float = 0.8):
     """

@@ -169,7 +169,7 @@ Esta base de datos surge como una alternativa al famoso conjunto de datos \emph{
 
 Más adelante, en \customcite{adecuacion_arquitectura_red:seccion}, discutiremos sobre la ideonidad de la arquitectura de red teniendo en cuenta la base de datos que acabamos de presentar.
 
-\subsection{Motivación}
+\subsection{Motivación} \label{motivacion:seccion}
 
 Hemos elegido este proyecto por nuestro interés en el estudio de redes Siamesas. Queríamos profundizar en su funcionamiento, en concreto, en las dificultades que supone la generación de triples para el correcto entrenamiento de la red a través de la función de error \emph{Triplet Loss}. De hecho, y como comentaremos más adelante, esta ha sido la parte más complicada del proyecto, pues escribir un código lo más eficiente posible ha sido crítico para reducir drásticamente los tiempos de ejecución.
 
@@ -239,30 +239,96 @@ $$Loss(a, p, n) := max(||f_{\theta}(a) - f_{\theta}(p)||^2 - ||f_{\theta}(a) - f
 
 \subsection{Adecuación de la arquitectura de red a la base de datos escogida} \label{adecuacion_arquitectura_red:seccion}
 
+Las redes siamesas se han usado sobre todo en tareas de reconocimiento de caras y en verificación de firmas a mano \cite{siamese_wikipedia:online}. Estos dos problemas presentan las siguientes características fundamentales:
+
+\begin{itemize}
+  \item La red tiene que distinguir si dos imágenes se corresponden a la misma entidad o no (dos fotografías de dos personas se corresponden a la misma, dos firmas se han realizado por la misma persona)
+  \item La red va a ver ejemplos de entidades no vistas durante el entrenamiento. Por ejemplo, tiene que distinguir si dos fotos de personas son de la misma persona, sin haber visto fotografías de esa persona previamente. En modelos de clasificación clásicos la red puede enfrentarse a fotografías nunca vistas, pero de una clase de la que ha visto otras fotografías. Así, esta es una diferencia fundamental con otros modelos de \emph{machine learning} con los que hemos trabajado 
+  \item Potencialmente, la red tiene pocos ejemplos de cada entidad de los que aprender. 
+\end{itemize}
+
+En nuestra base de datos no se presentan las características fundamentales que hemos expuesto. La red se va a enfrentar a imágenes de clases que ya hemos visto previamente (fotografías nuevas de botas, por ejemplo. Pero la red ha sido entrenada con otras fotografias de otros tipos de botas). Además, tenemos muchos ejemplos de cada una de las diez clases con las que trabajamos.
+
+Entonces, ¿por qué trabajamos con esta base de datos? En un primer momento, exploramos bases de datos más adecuadas para este problema, que no tuviésen que ver con el reconocimiento de caras o de firmas manuales. Por ejemplo, con una base de datos de figuras \emph{Lego} \cite{lego_database:online}. Sin embargo, esta base de datos era demasiado compleja, tal y como nos indicó el profesor de teoría de la asignatura (nos indicó el problema de que muchas figuras salían en posturas demasiado diferentes, como por ejemplo, de cara a la cámara y de espaldas). Nos encontramos con problemas parecidos buscando bases de datos más adecuadas a las características fundamentales presentadas previamente.
+
+Por tanto, escogemos usar esta base de datos porque, a pesar de no ser adecuado el uso de la arquitectura para este problema, podemos profundizar en todos los aspectos expuestos en \customcite{motivacion:seccion}. De hecho, y como se comentará más adelante, la base de datos ha supuesto una gran dificultad en lo que tiempos de entrenamiento se refiere. Con esto, dudamos mucho de haber sido capaces de realizar un estudio en una base de datos más adecuada teniendo en cuenta los recursos computacionales de los que disponemos (principalmente, los que \emph{Google Colab} nos otorga).
+
+En \customcite{conclusiones_triples_aleatorios:seccion} vemos que con nuestra técnica \emph{baseline} se obtienen resultados muy pobres. Por lo tanto, la base de datos escogida no supone un problema trivial para la arquitectura de red que estamos empleando.
+
+Una posible mejora que no exploramos por falta de tiempo es realizar el entrenamiento considerando 9 de las 10 clases, y evaluar el comportamiento sobre imágenes de la clase que nunca ha visto la red. Por ejemplo, nunca mostrar a la red imágenes de botas, y en evaluación, comprobar si la red es capaz de distinguir efectivamente imágenes de botas del resto de clases que sí ha visto durante el entrenamiento.
+
 \pagebreak
 
 \section{Entrenamiento usando triples aleatorios}
 
 \subsection{Detalles de implementación}
 
-En un primer momento, comenzaremos generando los triples (\emph{anchor}, \emph{positive}, \emph{negative}) de forma aleatoria entre las imágenes de la base de datos. Para ello establecemos un número máximo de triples que usaremos para entrenar, pues todas las combinaciones posibles serían inabarcables. 
+Para la creación de los triples aleatorios, diseñaremos un \lstinline{Dataset} de \lstinline{Pytorch} para definir dichos triples aleatorios. Pasaremos de tener un conjunto de datos formado por pares (Imagen, Etiqueta) a tener un conjunto de datos formado por triples (Ancla, Positivo, Negativo). Notar que en dicha transformación las etiquetas pierden el protagonismo, lo que será clave a la hora de adaptar el bucle de entrenamiento, que ignorará dichas etiquetas por completo. 
+
+En dicho \emph{dataset} definiremos un tamaño del conjunto de datos arbitrario. Podríamos considerar todos los triples del conjunto de datos. Pero esto supondría un \emph{dataset} de tamaño intratable. Además, dejaría de ser un conjunto con triples aleatorios y pasaría a ser un conjunto con todas las combinaciones de triples.  
+
+Además de esto, el único detalle interesante es el pre-cómputo de las listas de índices en función de la clase. Es decir, tenemos acceso a los índices de las ímagenes de cada clase pre-computados, para que el cálculo de los triples sea más rápido.
+
+Una vez hecho esto, el bucle de entrenamiento es el usual. Pasamos a la red \emph{minibatches} conteniendo los triples, la red calcula su representación, y aplicamos la función de pérdida a cada triple. Dicha función de pérdida está implementada en la clase \lstinline{TripletLoss} y \lstinline{TripletLossCustom} (la última se encarga de manejar el error de todo un \emph{minibatch}).
+
+Utilizaremos para su entrenamiento minibatches de 32 triples y un total de 10 épocas.
+% TODO -- hay que especificar el tamaño del embedding escogido finalmente
+% TODO -- hay que escoger el tamaño del dataset de triples aleatorios
 
 \subsection{Resultados del entrenamiento}
 
-\subsection{Adaptación a una tarea de clasificación}
+% TODO -- hay que escribir estos resultados
 
-Una vez entrenada la red con los triples aleatorios, vamos a construir un clasificador usando kNN. Para ello vamos a calcular los embeddings de todas las imágenes del dataset con la Red entrenada y utilizaremos estos dato 
+\subsection{Adaptación a una tarea de clasificación} 
+
+Una vez entrenada la red, disponemos de una red que transforma imágenes en un espacio $\mathbb{R}^d$ con $d$ pequeña. Además, tenemos la propiedad fundamental que ya hemos comentado varias veces: imágenes de la misma clase tienen representaciones cercanas, e imágenes de clases distintas tienen representaciones lejanas.
+
+Por ello, parece adecuado usar el algoritmo \emph{k-NN} para adaptar nuestra red, que simplemente calcula cierta representación de las imágenes, para una tarea de clasificación. Esto es lo que hacemos en la clase \lstinline{EmbeddingToClassifier}, que toma una red de este tipo y realiza la adaptación que ya hemos comentado.
+
+Para ello, toma la red y el conjunto de imágenes que usaremos como base de instancias para \emph{k-NN}. Calculamos y almacenamos las representaciones de todas las imágenes. Cuando llega un nuevo ejemplo (una nueva imagen), calculamos su representación y aplicamos \emph{k-NN} sobre nuestro conjunto almacenado de representaciones. 
+
+En nuestro caso, usaremos $k = 3$. Los resultados de realizar esta adaptación a la tarea de clasificación se muestran a continuación.
+
+\subsubsection{Resultados de clasificación}
+
+% TODO -- hay que poner los resultados de adaptar a clasificacion
 
 
-\subsection{Conclusiones}
+\subsection{Conclusiones} \label{conclusiones_triples_aleatorios:seccion}
+
+% TODO -- hay que escribir estas conclusiones (los triples aleatorios son muy malos pero son un buen baseline para el modelo que construimos más adelante)
+
 
 \pagebreak
 
 \section{Entrenamiento usando triples \emph{online}}
 
+\subsection{Detalles de implementación}
+
+En este caso cambiaremos la estrategia para generar los triples (\emph{anchor}, \emph{positive}, \emph{negative}). Como el entrenamiento de la red se realiza por medio de mini batches, vamos a calcular para cada mini batch de imágnenes del dataset los triples más difíciles posibles. 
+
+Entendemos por triple difícil aquel cuya distancia entre el \emph{anchor} y el \emph{positive} es el máximo de entre todas las distancias a los positivos del minibatch y la distancia entre el \emph{anchor} y \emph{negative} es el mínimo de entre todas las distancias a los negativos del minibatch.
+
+A causa de este nuevo enfoque, resulta interesante el empleo de minibatches de gran tamaño (usaremos 1024) pues encontraremos conjuntos de triples más difíciles cuantas más imágenes haya en el minibatch.
+
+Por otro lado aclarar que de esta forma, de un minibatch de 1024 imágenes del dataset, obtendremos como resultado un minibatch de 1024 triples difíciles que pasaremos a la red para entrenarla.
+
+Finalmente el número de épocas establecidas para el entrenamiento es de 7.
+
+\subsection{Resultados del entrenamiento}
+
+\subsection{Adaptación a una tarea de clasificación}
+
+De la misma forma que se hizo en el caso de triples aleatorios creamos un clasificador utilizando kNN con $k = 3$.
+
+\subsection{Conclusiones}
+
+
 \pagebreak
 
 \section{Conclusiones}
+
+\pagebreak
 
 % Bibliografia
 \bibliography{./References}

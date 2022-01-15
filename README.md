@@ -36,6 +36,7 @@
     - [ ] Distancia intracluster
     - [ ] Distancia intercluster
     - [x] Silhouette de los clusters obtenidos
+- [ ] Escribir en la memoria las estimaciones que hacemos del hyperparameter tuning teniendo una aproximación de cinco minutos por época
 
 # Decisión del problema a resolver
 

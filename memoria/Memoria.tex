@@ -157,15 +157,59 @@
 
 \subsection{Problema a resolver}
 
+En esta práctica vamos a trabajar con el uso de redes siamesas y la función de pérdida \emph{Triplet Loss}. Por tanto, calcularemos un \emph{embedding} de la base de datos. Adaptaremos dicha red para realizar una tarea de clasificación usando el algoritmo \emph{k-NN}.
+
+Realizaremos dos experimentos. El primero de ellos basado en el entrenamiento de la red usando triples aleatorios. El segundo, basado en el entrenamiento de la red usando triples difíciles, calculados de forma \emph{online} por cada \emph{minibatch}.
+
 \subsection{Elección del \emph{dataset}}
+
+El dataset que hemos utilizado para la realización de este proyecto se denomina \emph{FashionMNIST} \cite{zalando_dataset:online} y nos proporcionaba un total de 60000 imágenes $28 \times 28$ en escala de grises de ropa de distintos tipos (en concreto de 10 clases distintas). 
+
+Esta base de datos surge como una alternativa al famoso conjunto de datos \emph{MNIST}. Los autores de la base de datos buscaban mantener la estructura de la base de datos original (tamaño de las imágenes, número de clases, tamaños de los conjuntos de entrenamiento y validación, \ldots) a la vez que proponiendo un mayor reto que el reconocimiento de dígitos \cite{database_why:online}.
+
+Más adelante, en \customcite{fundamentos_teoricos:seccion}, discutiremos sobre la ideonidad de la arquitectura de red teniendo en cuenta la base de datos que acabamos de presentar.
 
 \subsection{Motivación}
 
+Hemos elegido este proyecto por nuestro interés en el estudio de redes Siamesas. Queríamos profundiar en su funcionamiento, en concreto, en las dificultades que supone la generación de triples para el correcto entrenamiento de la red a través de la función de error \emph{Triplet Loss}. De hecho, y como comentaremos más adelante, esta ha sido la parte más complicada del proyecto, pues escribir un código lo más eficiente posible ha sido crítico para reducir drásticamente los tiempos de ejecución.
+
+La elección de la base de datos viene motivada por la actualidad de los datos que en ella se presentan y por las características de la misma. En concreto, es una base de datos lo suficientemente sencilla como para permitirnos realizar la experimentación aquí presentada en tiempos razonables, a la vez que tratábamos un problema más o menos complejo de resolver.
+
 \subsection{Objetivos a realizar}
+
+Los objetivos que nos proponemos en este proyecto son: 
+
+\begin{enumerate}
+  \item Aplicar \emph{Transfer Learning}. Durante todos los experimentos, usaremos una red \emph{ResNet18} pre-entrenada sobre \emph{ImageNet} que modificaremos ligeramente (en la capa de salida) y sobre la que realizaremos \emph{fine tuning}.
+  \item Entrenamiento de la red usando triples aleatorios. Esperamos obtener resultados muy malos. Sin embargo, tomamos esto como \emph{baseline}, con el que compararemos cuando propongamos una mejor forma de tomar los triples con los que entrenamos.
+  \item Entrenamiendo de la red usando triples difíciles, calculados de forma \emph{online} dentro de cada \emph{minibatch}. Con esto esperamos obtener una mejora drástica frente al uso de triples aleatorios.
+  \item Adaptación de ambas redes (la entrenada con triples aleatorios y la entrenada con triples difíciles) a una tarea de clasificación usando \emph{k-NN} sobre el \emph{embedding} que las redes siamesas calculan.
+\end{enumerate}
+
+\subsection{Otros detalles}
+
+Al principio del \emph{Notebook} definimos una variable \lstinline{RUNNING_ENV} que indica en que tipo de entorno nos encontramos. Cuando \lstinline{RUNNING_ENV == "local"}, indicamos que estamos corriendo el \emph{Notebook} en local, y cuando \lstinline{RUNNING_ENV == "remote"} indicamos que estamos corriendo en \emph{Google Colab}. Así podemos controlar las pequeñas diferencias entre estos dos entornos de desarrollo. Principalmente son dos las diferencias:
+
+\begin{itemize}
+    \item Cuando corremos en \emph{Google Colab} tenemos que introducir un código de verificación
+    \item Las rutas de la carpeta donde guardamos las imágenes son diferentes
+\end{itemize}
+
+Además, al estar usando \lstinline{Pytorch} como librería principal, hemos tenido que escribir mucho código para llevar a cabo tareas básicas (como el bucle del entrenamiento, funciones para mostrar el progreso del entrenamiento conforme se está realizando, funciones para evaluar un clasificador, \ldots). Por ello hemos decidido separar el código de la siguiente forma:
+
+\begin{itemize}
+  \item Una carpeta \lstinline{lib/} en la que tenemos ficheros \lstinline{.py} con el código básico del que ya hemos hablado
+  \item Un \emph{notebook} \lstinline{Notebook.ipynb}, en el que realizamos todo el trabajo interesante. Por ejemplo, aquí definimos todos los hiperparámetros que usamos finalmente, las funciones de pérdida usadas, la forma de calcular los triples, la evaluación del modelo, \ldots
+\end{itemize}
+
 
 \pagebreak
 
-\section{Fundamentos Teóricos}
+\section{Fundamentos Teóricos} \label{fundamentos_teoricos:seccion}
+
+% TODO -- hay que justificar la ideonidad de las redes siamesas a la base de datos escogida
+
+
 
 \pagebreak
 

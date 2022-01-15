@@ -163,15 +163,15 @@ Realizaremos dos experimentos. El primero de ellos basado en el entrenamiento de
 
 \subsection{Elección del \emph{dataset}}
 
-El dataset que hemos utilizado para la realización de este proyecto se denomina \emph{FashionMNIST} \cite{zalando_dataset:online} y nos proporcionaba un total de 60000 imágenes $28 \times 28$ en escala de grises de ropa de distintos tipos (en concreto de 10 clases distintas). 
+El dataset que hemos utilizado para la realización de este proyecto se denomina \emph{FashionMNIST} \cite{zalando_dataset:online} y nos proporciona un total de 60000 imágenes $28 \times 28$ en escala de grises de ropa de distintos tipos (en concreto de 10 clases distintas). 
 
-Esta base de datos surge como una alternativa al famoso conjunto de datos \emph{MNIST}. Los autores de la base de datos buscaban mantener la estructura de la base de datos original (tamaño de las imágenes, número de clases, tamaños de los conjuntos de entrenamiento y validación, \ldots) a la vez que proponiendo un mayor reto que el reconocimiento de dígitos \cite{database_why:online}.
+Esta base de datos surge como una alternativa al famoso conjunto de datos \emph{MNIST}. Los autores de la base de datos buscaban mantener la estructura de la base de datos original (tamaño de las imágenes, número de clases, tamaños de los conjuntos de entrenamiento y test, \ldots) a la vez que proponer un mayor reto que el reconocimiento de dígitos \cite{database_why:online}.
 
-Más adelante, en \customcite{fundamentos_teoricos:seccion}, discutiremos sobre la ideonidad de la arquitectura de red teniendo en cuenta la base de datos que acabamos de presentar.
+Más adelante, en \customcite{adecuacion_arquitectura_red:seccion}, discutiremos sobre la ideonidad de la arquitectura de red teniendo en cuenta la base de datos que acabamos de presentar.
 
 \subsection{Motivación}
 
-Hemos elegido este proyecto por nuestro interés en el estudio de redes Siamesas. Queríamos profundiar en su funcionamiento, en concreto, en las dificultades que supone la generación de triples para el correcto entrenamiento de la red a través de la función de error \emph{Triplet Loss}. De hecho, y como comentaremos más adelante, esta ha sido la parte más complicada del proyecto, pues escribir un código lo más eficiente posible ha sido crítico para reducir drásticamente los tiempos de ejecución.
+Hemos elegido este proyecto por nuestro interés en el estudio de redes Siamesas. Queríamos profundizar en su funcionamiento, en concreto, en las dificultades que supone la generación de triples para el correcto entrenamiento de la red a través de la función de error \emph{Triplet Loss}. De hecho, y como comentaremos más adelante, esta ha sido la parte más complicada del proyecto, pues escribir un código lo más eficiente posible ha sido crítico para reducir drásticamente los tiempos de ejecución.
 
 La elección de la base de datos viene motivada por la actualidad de los datos que en ella se presentan y por las características de la misma. En concreto, es una base de datos lo suficientemente sencilla como para permitirnos realizar la experimentación aquí presentada en tiempos razonables, a la vez que tratábamos un problema más o menos complejo de resolver.
 
@@ -195,7 +195,7 @@ Al principio del \emph{Notebook} definimos una variable \lstinline{RUNNING_ENV} 
     \item Las rutas de la carpeta donde guardamos las imágenes son diferentes
 \end{itemize}
 
-Además, al estar usando \lstinline{Pytorch} como librería principal, hemos tenido que escribir mucho código para llevar a cabo tareas básicas (como el bucle del entrenamiento, funciones para mostrar el progreso del entrenamiento conforme se está realizando, funciones para evaluar un clasificador, \ldots). Por ello hemos decidido separar el código de la siguiente forma:
+Además, al estar usando \lstinline{Pytorch} como librería principal, hemos tenido que escribir mucho código para llevar a cabo tareas básicas (como el bucle del entrenamiento, funciones para mostrar el progreso del entrenamiento conforme se está realizando, funciones para evaluar un clasificador, \ldots) Por ello hemos decidido separar el código de la siguiente forma:
 
 \begin{itemize}
   \item Una carpeta \lstinline{lib/} en la que tenemos ficheros \lstinline{.py} con el código básico del que ya hemos hablado
@@ -205,15 +205,56 @@ Además, al estar usando \lstinline{Pytorch} como librería principal, hemos ten
 
 \pagebreak
 
-\section{Fundamentos Teóricos} \label{fundamentos_teoricos:seccion}
+\section{Fundamentos Teóricos} 
 
-% TODO -- hay que justificar la ideonidad de las redes siamesas a la base de datos escogida
+\subsection {\emph{Redes Siamesas}}
 
+Una red siamesa es una arquitectura en la que se tienen dos redes idénticas, con el objetivo que, dadas dos imágenes de entidades iguales, obtengan dos representaciones cercanas. Y al revés, dadas dos entidades distintas, se debe obtener dos representaciones distantes.
 
+Al trabajar con dos redes idénticas, lo que realmente manejamos es una única red que calcula representaciones de imágenes pasadas como entrada. Usaremos dicha red para calcular representaciones de pares o triples (en nuestro caso concretro, trabajaremos sobre todo con triples) de imágenes dadas como entrada.
+
+Aclaramos lo que entendemos por representaciones cercanas y distantes. En primer lugar, la red calculará, dada una imagen de entrada $28\times28$, un embedding de la imagen. Esto es, una representación vectorial es un espacio $\mathbb{R}^d$ con $d << 28*28$ (ie. $d = 2$, $d = 4$, \ldots). 
+
+Con esto, dadas dos imágenes $x, y$, sus representaciones $ f_{\theta}(x),  f_{\theta}(y)$ serán cercanas cuando $$|| f_{\theta}(x) - f_{\theta}(y)||_2 \approx 0$$ Del mismo modo serán lejanas cuando $$|| f_{\theta}(x) - f_{\theta}(y)||_2 >> 0$$ 
+
+\subsection{\emph{Triplet Loss}}
+
+Esta será la función de pérdida que vamos a usar para optimizar nuestra red siamesa. A continuación introducimos el por qué de su uso.
+
+Durante el entrenamiento, la red verá como ejemplos triples. Esto es, triples de la forma \emph{anchor}, \emph{positive}, \emph{negative}. \emph{anchor} será una imagen arbitraria, mientras que \emph{positive} será una imagen de la misma clase que \emph{anchor} y \emph{negative} será una imagen de otra clase. Queremos que la distancia entre ancla y positivo sea pequeña, y entre ancla y negativo sea grande. Por tanto, lo que queremos es:
+
+$$||f_{\theta}(anchor) - f_{\theta}(positive)||^2 \leq ||f_{\theta}(anchor) - f_{\theta}(negative)||^2 $$
+
+luego 
+
+$$||f_{\theta}(anchor) - f_{\theta}(positive)||^2 - ||f_{\theta}(anchor) - f_{\theta}(negative)||^2 \leq 0$$
+
+Para evitar la trivialidad $f_{\theta}(img) = 0; \forall img$ añadimos un margen $\alpha > 0$ de la siguiente forma:
+
+$$||f_{\theta}(anchor) - f_{\theta}(positive)||^2 - ||f_{\theta}(anchor) - f_{\theta}(negative)||^2 + \alpha \leq 0$$
+
+Con esto, definimos una función de pérdida que solo se activará cuando la desigualdad no se mantenga, con lo que:
+
+$$Loss(a, p, n) := max(||f_{\theta}(a) - f_{\theta}(p)||^2 - ||f_{\theta}(a) - f_{\theta}(n)||^2 + \alpha, 0)$$
+
+\subsection{Adecuación de la arquitectura de red a la base de datos escogida} \label{adecuacion_arquitectura_red:seccion}
 
 \pagebreak
 
 \section{Entrenamiento usando triples aleatorios}
+
+\subsection{Detalles de implementación}
+
+En un primer momento, comenzaremos generando los triples (\emph{anchor}, \emph{positive}, \emph{negative}) de forma aleatoria entre las imágenes de la base de datos. Para ello establecemos un número máximo de triples que usaremos para entrenar, pues todas las combinaciones posibles serían inabarcables. 
+
+\subsection{Resultados del entrenamiento}
+
+\subsection{Adaptación a una tarea de clasificación}
+
+Una vez entrenada la red con los triples aleatorios, vamos a construir un clasificador usando kNN. Para ello vamos a calcular los embeddings de todas las imágenes del dataset con la Red entrenada y utilizaremos estos dato 
+
+
+\subsection{Conclusiones}
 
 \pagebreak
 

@@ -25,17 +25,18 @@
 - [x] Métricas básicas de clasificación
     - [x] Accuracy
     - [x] ROC AUC
-- [x] Cálculo de triples difíciles <--
-- [x] Optimizar el calculo de loss online <--
+- [x] Cálculo de triples difíciles
+- [x] Optimizar el calculo de loss online
 - [x] Usar memoization para el calculo de las distancias
 - [x] Revisar el codigo de aleatorios porque lo hemos podido romper
-- [ ] Hacer hyperparameter tuning de alguna forma
+- [x] Hacer hyperparameter tuning de alguna forma
 - [ ] Estaría bien dividir el train en train / val con **estratificación**
 - [ ] Mostrar en la memoria el cambio que supone cambiar la ultima FC
 - [ ] Añadir métricas adicionales para el embedding
     - [ ] Distancia intracluster
     - [ ] Distancia intercluster
     - [x] Silhouette de los clusters obtenidos
+- [ ] --> Mostrar las curvas de aprendizaje en la memoria (todavía no las tenemos)
 - [ ] Escribir en la memoria las estimaciones que hacemos del hyperparameter tuning teniendo una aproximación de cinco minutos por época
 
 # Decisión del problema a resolver

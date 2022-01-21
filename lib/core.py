@@ -284,17 +284,14 @@ def train_model_online(
 
             # Update counter
             current_seen_batches += 1
+            #  print(f"TODO -- current seen batches = {current_seen_batches}")
 
             # Statistics -- important, we have to use the iteration given by current epoch and current
             # iteration counter in inner loop. Otherwise logs are going to be non-uniform over iterations
             curr_it = epoch * len(train_loader.dataset) + i * train_loader.batch_size
 
-            # Control from here the logger
+            #  if logger.should_log(curr_it) or current_seen_batches == 10:
             if current_seen_batches == 10:
-                current_it = 0
-                current_seen_batches = 0
-
-            if logger.should_log(curr_it):
                 # Log and return loss from training and validation
                 training_loss, validation_loss = logger.log_process(train_loader, validation_loader, epoch, i)
 
@@ -311,6 +308,9 @@ def train_model_online(
                 snapshot_name = "snapshot_" + name + "==" + get_datetime_str()
                 snapshot_folder = os.path.join(path, "snapshots")
                 filesystem.save_model(net, folder_path = snapshot_folder, file_name = snapshot_name)
+
+            # Re-start counter if hit 10
+            current_seen_batches = current_seen_batches % 10
 
 
     print("Finished training")

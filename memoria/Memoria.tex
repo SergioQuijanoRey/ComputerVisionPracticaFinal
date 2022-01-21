@@ -366,7 +366,7 @@ Por otra parte, si ahora extraemos algunas métricas como son el Accurcy del cla
         \hline
     \end{tabular}
 \end{center}
-    \caption{Métricas adicionales del modelo entrenado usando triples aleatorios}
+   \caption{Métricas adicionales del modelo entrenado usando triples aleatorios}
 \end{table}
 
 
@@ -390,21 +390,65 @@ Cabe destacar de nuevo que no hemos realizado una exploración de los hiperpará
 
 \subsection{Detalles de implementación}
 
-En este caso cambiaremos la estrategia para generar los triples (\emph{anchor}, \emph{positive}, \emph{negative}). Como el entrenamiento de la red se realiza por medio de mini batches, vamos a calcular para cada mini batch de imágnenes del dataset los triples más difíciles posibles. 
+En este caso cambiaremos la estrategia para generar los triples (\emph{anchor}, \emph{positive}, \emph{negative}). En el uso de triples aleatorios, creábamos de forma \emph{offline} un conjunto de datos de triples, en el que ya no necesitábamos información de las etiquetas (pues va implícita en la estructura de triples). En este caso pasaremos a usar una estrategia \emph{online}.
 
-Entendemos por triple difícil aquel cuya distancia entre el \emph{anchor} y el \emph{positive} es el máximo de entre todas las distancias a los positivos del minibatch y la distancia entre el \emph{anchor} y \emph{negative} es el mínimo de entre todas las distancias a los negativos del minibatch.
+Para ello, realizaremos un bucle clásico de entrenamiento:
 
-A causa de este nuevo enfoque, resulta interesante el empleo de minibatches de gran tamaño (usaremos 1024) pues encontraremos conjuntos de triples más difíciles cuantas más imágenes haya en el minibatch.
+\begin{enumerate}
+  \item Tomamos un \emph{minibatch} de imágenes etiquetadas, 
+  \item Pasamos las imágenes por la red obteniendo los valores de salida
+  \item Con los valores de salida y las etiquetas, calculamos la función de pérdida
+  \item Propagamos hacia atrás la pérdida
+\end{enumerate}
 
-Por otro lado aclarar que de esta forma, de un minibatch de 1024 imágenes del dataset, obtendremos como resultado un minibatch de 1024 triples difíciles que pasaremos a la red para entrenarla.
+Si en los triples aleatorios definíamos un \emph{dataset} para manejar los triples, en este caso usaremos una función de péridda de \lstinline{Pytorch} para dicho manejo de los triples. Esta función de pérdida la definimos en la clase \lstinline{OnlineTripletLoss}. 
 
-Finalmente el número de épocas establecidas para el entrenamiento es de 7.
+La estrategia es la siguiente. Por cada imagen del \emph{batch}, calcularemos su triple más difícil dentro de dicho \emph{batch}. Es decir, consideramos una a una las imágenes del \emph{batch} como anclas. Dada un ancla, buscamos la imagen del \emph{batch} de la misma clase más alejada (positivo difícil), y la imagen de distinta clase más cercana (negativo difícil). Con este triple difícil calculamos el \emph{Triplet Loss}. Devolvemos la media de las pérdidas por cada triple.
+
+Con esto conseguimos generar, de forma \emph{online}, triples difíciles, pero no extremadamente difíciles, pues el espacio de búsqueda de positivos y negativos se restringe al \emph{batch}. Para tener un buen compromiso en la dificultad, usaremos un tamaño de \emph{batch} considerablemente grande, en concreto, de 1024. Además, los \emph{minibatches} serán distintos entre épocas, y por tanto conseguimos ver combinaciones distintas entre épocas (esto no lo lograríamos usando minería de triples \emph{offline}).
+
+Para acelerar el entrenamiento, por cada \emph{minibatch} que pasamos a la función de pérdida, realizamos pre-cómputos para que ciertas operaciones no se repitan por cada elemento del \emph{minibatch}. En concreto, y como ya hemos hecho previamente, calculamos una lista de listas, en el que cada lista almacena los índices de las imágenes de una clase en concreto. También calculamos una lista de listas, en el que cada lista almacena los índices de todas las imágenes que no son de una clase en concreto. Esta estrategia hace que los tiempos de entrenamiento se reduzcan aproximadamente 10 veces. 
+
+Además, para que esta estrategia sea efectiva, es bueno usar \emph{minibatches} de gran tamaño, para que el tiempo que perdemos pre-computando se amortice con muchos cálculos ahorrados. Y ya usábamos \emph{minibatches} grandes para encontrar triples de suficiente dificultad.
 
 \subsection{\emph{Hyperparameter tuning}} \label{hyperparameter_tuning:seccion}
+
+Como este va a ser nuestro modelo final, vamos a considerar también hacer un \emph{Grid Search} de los parámetros más importantes del modelo, usando como técnica de validación \emph{4-Fold Cross Validation}. Los parámetros más relevantes a explorar consideramos que son: el learning rate, la dimensión del embedding y el margin (el parámetro $\alpha$ de la fórmula de \emph{TripletLoss}). 
+
+Los valores que, inicialmente, consideramos explorar son:
+
+\begin{itemize}
+  \item Margen: $\{0.001, 0.01, 0.1\}$
+  \item \emph{Learning Rate}: $\{0.0001, 0.001, 0.01\}$
+  \item Dimensión del \emph{embedding}: $\{2, 3, 4\}$
+\end{itemize}
+
+Decimos que consideramos \entrecomillado{inicialmente} explorar porque ciertas combinaciones no las hemos explorado, al ver que ciertos valores de los parámetros producían resultados muy malos, y por tanto, consideramos que no merecía seguir explorando una zona potencialmente mala.
+
+Para evaluar cada combinación de parámetros del Grid vamos a emplear \emph{4-fold Cross Validation}, dividiendo el conjunto de todas las imágenes de entrenamiento (un total de 48000) en 80 \% para Training y 20 \% para validación.
+
+Lo ideal habría sido usar 5 o 10 \emph{fold cross validation}, al menos 10 épocas de entrenamiento. Sin embargo, haciendo cálculos, llegamos a la conclusión de que esto no era viable. Estimamos que tardábamos  un total de \emph{10 minutos por época}. 
+
+En total queríamos explorar tres posibles valores de cada parámetro, lo que hace un total de \emph{27 combinaciones}. Por otro lado se consideró emplear 10 épocas y la estrategia 5-fold, el tiempo estimado de entrenamiento era el siguiente:   
+
+$$\frac{10 \:  min * 10 \: epocas * 5 \: folds * 27 \: parametros}{60 \: min * 24 \: horas} = 9.375 dias$$
+
+Como esta cantidad de tiempo de entrenamiento no se podía asumir, pensamos en reducir el número de épocas a 7, pues consideramos que este número seguía siendo apropiado para sacar conclusiones:
+
+$$\frac{10 \:  min * 7 \: epocas * 5 \: folds * 27 \: parametros}{60 \: min * 24 \: horas} = 6.56 dias$$
+
+Finalmente decidimos reducir el número de folds a 4 y hacer 4-fold Cross Validation, pero consideramos que ya no podíamos reducir ningún valor más sin perjudicar en exceso la búsqueda:
+
+$$\frac{10 \:  min * 7 \: epocas * 4 \: folds * 27 \: parametros}{60 \: min * 24 \: horas} = 5.25 dias$$
+
+Podemos ver que sigue siendo un tiempo intratable. Sin embargo, disponemos de dos cuentas de \emph{Google Colab} para explorar en paralelo, por lo que el tiempo se reduce a $2.625$ días, aproximadamente. Lo seguimos considerando un tiempo no razonable, pero durante el proceso de exploración supervisamos los resultados para podar ciertas zonas de exploración poco prometedoras de forma manual. Con ello, todo el conjunto de parámetros explorados y sus resultados se muestran en la siguiente tabla:
+
 
 \subsection{Resultados del entrenamiento}
 
 \subsection{Adaptación a una tarea de clasificación}
+
+\subsubsection{Resultados de clasificación}
 
 De la misma forma que se hizo en el caso de triples aleatorios creamos un clasificador utilizando kNN con $k = 3$.
 

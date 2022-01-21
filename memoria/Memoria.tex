@@ -217,6 +217,7 @@ Aclaramos lo que entendemos por representaciones cercanas y distantes. En primer
 
 Con esto, dadas dos imágenes $x, y$, sus representaciones $ f_{\theta}(x),  f_{\theta}(y)$ serán cercanas cuando $$|| f_{\theta}(x) - f_{\theta}(y)||_2 \approx 0$$ Del mismo modo serán lejanas cuando $$|| f_{\theta}(x) - f_{\theta}(y)||_2 >> 0$$ 
 
+\pagebreak
 \subsection{\emph{Triplet Loss}}
 
 Esta será la función de pérdida que vamos a usar para optimizar nuestra red siamesa. A continuación introducimos el por qué de su uso.
@@ -237,6 +238,7 @@ Con esto, definimos una función de pérdida que solo se activará cuando la des
 
 $$Loss(a, p, n) := max(||f_{\theta}(a) - f_{\theta}(p)||^2 - ||f_{\theta}(a) - f_{\theta}(n)||^2 + \alpha, 0)$$
 
+\pagebreak
 \subsection{Adecuación de la arquitectura de red a la base de datos escogida} \label{adecuacion_arquitectura_red:seccion}
 
 Las redes siamesas se han usado sobre todo en tareas de reconocimiento de caras y en verificación de firmas a mano \cite{siamese_wikipedia:online}. Estos dos problemas presentan las siguientes características fundamentales:
@@ -259,6 +261,12 @@ Una posible mejora que no exploramos por falta de tiempo es realizar el entrenam
 
 \pagebreak
 
+\subsection{Métrica \emph{Silhouette}}
+
+% TODO -- hay que escribir esto
+
+\pagebreak
+
 \section{Entrenamiento usando triples aleatorios}
 
 \subsection{Detalles de implementación}
@@ -271,13 +279,55 @@ Además de esto, el único detalle interesante es el pre-cómputo de las listas 
 
 Una vez hecho esto, el bucle de entrenamiento es el usual. Pasamos a la red \emph{minibatches} conteniendo los triples, la red calcula su representación, y aplicamos la función de pérdida a cada triple. Dicha función de pérdida está implementada en la clase \lstinline{TripletLoss} y \lstinline{TripletLossCustom} (la última se encarga de manejar el error de todo un \emph{minibatch}).
 
-Utilizaremos para su entrenamiento minibatches de 32 triples y un total de 10 épocas.
-% TODO -- hay que especificar el tamaño del embedding escogido finalmente
-% TODO -- hay que escoger el tamaño del dataset de triples aleatorios
+Utilizaremos para su entrenamiento minibatches de 32 triples y un total de 10 épocas. 
 
-\subsection{Resultados del entrenamiento}
+Fijamos el tamaño del embedding a 2, y el margen a 0.001. Para optimizar el modelo usamos \emph{Adam} con un \emph{learning rate} inicial de 0.001. Esto porque en \customcite{hyperparameter_tuning:seccion}, hemos hecho una exploración de parámetros para el modelo que usa triples difíciles online, llegando a que los parámetros óptimos (para ese modelo) son dichos valores. Lo ideal habría sido realizar una exploración de parámetros para los triples aleatorios. Sin embargo, por tratarse del modelo que vamos a usar de base con el que comparar, y por lo lento del proceso de exploración de parámetros (esto lo comentaremos en \customcite{hyperparameter_tuning:seccion}), nos conformamos con los parámetros encontrados para el otro modelo.
+
+\pagebreak
+
+\subsection{Resultados del entrenamiento} \label{resultados_entrenamiento:seccion}
 
 % TODO -- hay que escribir estos resultados
+
+La curva de aprendizaje se muestra en la siguiente gráfica:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.4 \textwidth]{random_curva_aprendizaje}
+    \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples aleatorios. En azul, la función de pérdida en entrenamiento. En naranja, la función de pérdida en validación}
+\end{figure}
+
+En dicha curva de aprendizaje se muetra un claro comportamiento errático en el aprendizaje. Esto puede deberse a los siguientes motivos:
+
+\begin{itemize}
+  \item El valor del \emph{learning rate} es demasiado alto y por eso el ajuste del error con \emph{back propagation} provoca dicho comportamiento errático
+  \item No hemos entrenado durante suficientes épocas. Si entrenásemos durante más épocas, podríamos ver una tendencia global no tan errática
+  \item El uso de triples aleatorios no es adecuado para optimizar la red, y por ello obtenemos dicho comportamiento errático
+\end{itemize}
+
+Comprobamos que no hemos usado pocas épocas entrenando durante 50, en vez de 10. La curva de aprendizaje en este caso es la siguiente:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.4 \textwidth]{random_curva_aprendizaje_larga}
+    \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples aleatorios. En este caso, en vez de entrenar durante 10 épocas, entrenamos durante 50}
+\end{figure}
+
+Seguimos observando el mismo comportamiento errático, y por tanto, descartamos que dicho comportamiento se explique por el uso de insuficientes épocas en el entrenamiento. Respecto al \emph{learning rate}, mostramos ahora el resultado de entrenar durante 10 épocas con un \emph{learning rate} mucho más bajo (en concreto, $0.0001$). La curva de aprendizaje en este caso es la siguiente:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.4 \textwidth]{random_curva_aprendizaje_lrbajo}
+    \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples aleatorios. En este caso, en vez de entrenar usando un \emph{learning rate} de 0.001, usamos 0.0001. De nuevo, estamos entrenando durante 10 épocas}
+\end{figure}
+
+El comportamiento errático sigue mostrándose con claridad. Por tanto, descartamos las dos primeras hipótesis para explicar el comportamiento errático, y consideramos la más probable la última: el uso de triples aleatorios no es adecuado para la optimización de la red.
+
+Notar que en el \emph{Notebook} entregado usamos, tanto para el margen como para el \emph{learning rate} los parámetros originales. Si se quieren obtener los resultados que hemos mostrado para descartar hipótesis basta con modificar dichos parámetros en la celda con todos los hiperparámetros del \emph{Notebook}.
+
+Obtenemos un valor de la función de pérdida, en el conjunto de test, de $0.0621$. Dicho valor se consigue usando la función \lstinline{test_model}, que se encuentra en nuestra librería, en el fichero \lstinline{core.py}. Más adelante, en \customcite{random_adaptacion_resultados_clasificacion:seccion}, mostraremos más métricas del modelo obtenido, una vez que lo hayamos adaptado a una tarea de clasificación.
+
+\pagebreak
 
 \subsection{Adaptación a una tarea de clasificación} 
 
@@ -289,15 +339,50 @@ Para ello, toma la red y el conjunto de imágenes que usaremos como base de inst
 
 En nuestro caso, usaremos $k = 3$. Los resultados de realizar esta adaptación a la tarea de clasificación se muestran a continuación.
 
-\subsubsection{Resultados de clasificación}
+\pagebreak 
 
-% TODO -- hay que poner los resultados de adaptar a clasificacion
+\subsubsection{Resultados de clasificación} \label{random_adaptacion_resultados_clasificacion:seccion}
 
+Nos aprovechamos de los cálculos que realizamos en la adaptación del modelo a clasificación para mostrar la gráfica del \emph{embedding} obtenido sobre el conjunto de entrenamiento:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.4 \textwidth]{random_embedding}
+    \caption{Gráfica del \emph{embedding} calculado por la red sobre el conjunto de entrenamiento. Los colores muestran la clase asociada a cada uno de los puntos que mostramos}
+\end{figure}
+
+Como se puede ver en el gráfico anterior, las distintas clases se hallan muy juntas entre sí y entremezcladas, sin una separación clara por clase, por lo que la red no está separando correctamente las distintas clases del dataset. Este comportamiento era esperable debido a los malos resultados obtenidos previamente en el entrenamiento, y que mostrábamos en \customcite{resultados_entrenamiento:seccion}
+
+Por otra parte, si ahora extraemos algunas métricas como son el Accurcy del clasificador, el Área bajo la curva ROC o la métrica Silohuette sobre el modelo de clasificación KNN obtenemos lo siguiente: 
+
+\begin{table}[H]
+\begin{center}
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        Dataset & Accuracy & Área bajo la curva ROC & Silhouette \\
+        \hline
+        train & 0.125 & 0.5562 & -0.1894  \\
+        test & 0.1042 & 0.5075 &  -0.1014 \\
+        \hline
+    \end{tabular}
+\end{center}
+    \caption{Métricas adicionales del modelo entrenado usando triples aleatorios}
+\end{table}
+
+
+Como podemos observar, el Accuracy obtenido tanto en entrenamiento como en test por el clasificador es muy bajo, de un 10\%. Por otro lado el Área bajo la curva ROC es de un 0.5, lo que nos indica que el comportamiento que tiene el clasificador es prácticamente aleatorio. Finalmente en la métrica Silohuette obtenemos un -0.1014 lo que nos indica que las fronteras de las distintas clases se encuentran entremezcladas, es decir, los elementos de las distintas clases no están bien separados unos de los otros. No obtenemos \emph{clusters} de calidad en el \emph{embedding} calculado.
+
+En definitiva, estamos obteniendo unos resultados muy malos debido a una red que calcula un \emph{embedding} muy pobre. Como el algoritmo \emph{k-NN} depende fundamentalmente de la calidad de dicho \emph{embedding}, era de esperar, a la vista de los resultados de \customcite{resultados_entrenamiento:seccion}, un comportamiento muy malo en la adaptación a clasificación.
+
+\pagebreak
 
 \subsection{Conclusiones} \label{conclusiones_triples_aleatorios:seccion}
 
-% TODO -- hay que escribir estas conclusiones (los triples aleatorios son muy malos pero son un buen baseline para el modelo que construimos más adelante)
+Los resultados obtenidos por el modelo de clasificación usando la Red Siamesa entrenada con triples aleatorios son muy pobres, como hemos mostrado tanto en \customcite{resultados_entrenamiento:seccion} como en \customcite{random_adaptacion_resultados_clasificacion:seccion}. Claramente no se pueden tomar como una solución al problema planteado en este proyecto. 
 
+No obstante este modelo constituye un buen punto de partida sobre el cual mejorar los resultados obtenidos. En \customcite{resultados_entrenamiento:seccion} hemos defendido la hipótesis de que el comportamiento errático está causado por la inconveniencia de los triples aleatorios como mecanismo de selección de dichos triples. Por tanto, veremos más adelante si un mecanismo más adecuado de selección de triples consigue optimizar de forma correcta la red con la que estamos trabajando.
+
+Cabe destacar de nuevo que no hemos realizado una exploración de los hiperparámetros que definen el modelo y su entrenamiento. Principalmente, el valor del margen para la función de pérdida, el \emph{learning rate} y la dimensión del \emph{embedding} resultante. No tenemos tiempo para realizar una exploración que requiere mucho tiempo de cómputo. Además, consideramos que este mal comportamiento no se va a corregir con una mejor selección de parámetros.
 
 \pagebreak
 
@@ -314,6 +399,8 @@ A causa de este nuevo enfoque, resulta interesante el empleo de minibatches de g
 Por otro lado aclarar que de esta forma, de un minibatch de 1024 imágenes del dataset, obtendremos como resultado un minibatch de 1024 triples difíciles que pasaremos a la red para entrenarla.
 
 Finalmente el número de épocas establecidas para el entrenamiento es de 7.
+
+\subsection{\emph{Hyperparameter tuning}} \label{hyperparameter_tuning:seccion}
 
 \subsection{Resultados del entrenamiento}
 

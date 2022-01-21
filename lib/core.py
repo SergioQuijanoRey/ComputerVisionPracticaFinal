@@ -45,7 +45,7 @@ def test_model_online(model: nn.Module, test_loader: torch.utils.data.DataLoader
     test_loader: pytorch data loader wrapping test data
     loss_function: loss funct used to evaluate the model
     """
-    metric = metrics.calculate_mean_triplet_loss_online 
+    metric = metrics.calculate_mean_triplet_loss_online
     test_loss = metric(model, test_loader, loss_function, 1.0)
     print(f"Test Loss: {test_loss}")
 
@@ -131,7 +131,7 @@ def train_model_offline(
     # Loss and optimizer
     lr = parameters["lr"]
     criterion = parameters["criterion"]
-    
+
     # Use Adam as optimizer
     optimizer = optim.Adam(net.parameters(), lr = lr)
 
@@ -158,10 +158,10 @@ def train_model_offline(
     for epoch in range(epochs):
 
         for i, data in enumerate(train_loader):
-            
+
             # zero the parameter gradients
             optimizer.zero_grad()
-            
+
             # Forward
             outputs = [net(item[None, ...].to(device)) for item in data]
             loss = criterion(outputs)
@@ -237,7 +237,7 @@ def train_model_online(
     # Loss and optimizer
     lr = parameters["lr"]
     criterion = parameters["criterion"]
-    
+
     # Use Adam as optimizer
     optimizer = optim.Adam(net.parameters(), lr = lr)
 
@@ -259,6 +259,9 @@ def train_model_online(
     training_history["loss"] = []
     training_history["val_loss"] = []
 
+    # For controlling the logging
+    current_seen_batches = 0
+
     # Training the network
     epochs = parameters["epochs"]
     for epoch in range(epochs):
@@ -267,10 +270,10 @@ def train_model_online(
 
             # Unwrap the data
             imgs, labels = data
-            
+
             # zero the parameter gradients
             optimizer.zero_grad()
-            
+
             # Forward
             outputs = net(imgs.to(device))
             loss = criterion(outputs, labels.to(device))
@@ -279,9 +282,18 @@ def train_model_online(
             loss.backward()
             optimizer.step()
 
+            # Update counter
+            current_seen_batches += 1
+
             # Statistics -- important, we have to use the iteration given by current epoch and current
             # iteration counter in inner loop. Otherwise logs are going to be non-uniform over iterations
             curr_it = epoch * len(train_loader.dataset) + i * train_loader.batch_size
+
+            # Control from here the logger
+            if current_seen_batches == 10:
+                current_it = 0
+                current_seen_batches = 0
+
             if logger.should_log(curr_it):
                 # Log and return loss from training and validation
                 training_loss, validation_loss = logger.log_process(train_loader, validation_loader, epoch, i)

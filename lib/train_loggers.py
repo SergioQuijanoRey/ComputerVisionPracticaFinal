@@ -158,7 +158,7 @@ class TripletLoggerOffline(TrainLogger):
 
     def log_process(self, train_loader: DataLoader, validation_loader: DataLoader, epoch: int, iteration: int) -> Tuple[float, float]:
 
-        # Seleccionamos la funcion de perdida 
+        # Seleccionamos la funcion de perdida
         metric =  metrics.calculate_mean_triplet_loss_offline
 
         # Empezamos calculando las metricas que queremos mostrar
@@ -219,12 +219,12 @@ class TripletLoggerOnline(TrainLogger):
         self.validation_percentage = validation_percentage
 
     def log_process(self, train_loader: DataLoader, validation_loader: DataLoader, epoch: int, iteration: int) -> Tuple[float, float]:
-        
+
         # Este log puede ser muy lento asi que mostramos este mensaje
         # en primer lugar para tener nocion de lo que tarda el logger
         print(f"[{epoch} / {iteration}]")
 
-        # Seleccionamos la funcion de perdida 
+        # Seleccionamos la funcion de perdida
         metric =  metrics.calculate_mean_triplet_loss_online
 
         # Calculamos el numero maximo de ejemplos que evaluar
@@ -233,7 +233,6 @@ class TripletLoggerOnline(TrainLogger):
 
 
         # Empezamos calculando las metricas que queremos mostrar
-
         # Para tener mas eficiencia en inferencia
         with torch.no_grad():
 
@@ -245,7 +244,6 @@ class TripletLoggerOnline(TrainLogger):
 
             # Funcion de perdida en validacion
             mean_val_loss = metric(self.net, validation_loader, self.loss_func, validation_max_examples)
-
 
         # Volvemos a poner la red en modo entrenamiento
         self.net.train()
@@ -259,7 +257,7 @@ class TripletLoggerOnline(TrainLogger):
         return mean_train_loss, mean_val_loss
 
     def should_log(self, iteration: int) -> bool:
-        if iteration % self.iterations == 0 and iteration != 0:
+        if iteration % self.iterations == 0:
             return True
 
         return False

@@ -159,7 +159,7 @@ En este proyecto nos proponemos profundizar en el conocimiento de las Redes Siam
 
 \subsection{Problema a resolver}
 
-En esta práctica vamos a trabajar con el uso de redes siamesas y la función de pérdida \emph{Triplet Loss}. Por tanto, calcularemos un \emph{embedding} de la base d y probaremos distintas técnicas de elección de triples como son los tripes aleatorios ptaremos dicha red para realizar una tarea de clasificación usando el algoritmo \emph{k-NN}.
+En esta práctica vamos a trabajar con el uso de redes siamesas y la función de pérdida \emph{Triplet Loss}. Por tanto, calcularemos un \emph{embedding} de la base de datos y probaremos distintas técnicas de elección de triples como son los tripes aleatorios y los triples difíciles online. Adaptaremos dicha red para realizar una tarea de clasificación usando el algoritmo \emph{k-NN}.
 
 Realizaremos dos experimentos. El primero de ellos basado en el entrenamiento de la red usando triples aleatorios. El segundo, basado en el entrenamiento de la red usando triples difíciles, calculados de forma \emph{online} por cada \emph{minibatch}.
 
@@ -186,7 +186,7 @@ Los objetivos que nos proponemos en este proyecto son:
 \begin{enumerate}
   \item Aplicar \emph{Transfer Learning}. Durante todos los experimentos, usaremos una red \emph{ResNet18} pre-entrenada sobre \emph{ImageNet} que modificaremos ligeramente (en la capa de salida) y sobre la que realizaremos \emph{fine tuning}.
   \item Entrenamiento de la red usando triples aleatorios. Esperamos obtener resultados muy malos. Sin embargo, tomamos esto como \emph{baseline}, con el que compararemos cuando propongamos una mejor forma de tomar los triples con los que entrenamos.
-  \item Entrenamiendo de la red usando triples difíciles, calculados de forma \emph{online} dentro de cada \emph{minibatch}. Con esto esperamos obtener una mejora drástica frente al uso de triples aleatorios.
+  \item Entrenamiento de la red usando triples difíciles, calculados de forma \emph{online} dentro de cada \emph{minibatch}. Con esto esperamos obtener una mejora drástica frente al uso de triples aleatorios.
   \item Adaptación de ambas redes (la entrenada con triples aleatorios y la entrenada con triples difíciles) a una tarea de clasificación usando \emph{k-NN} sobre el \emph{embedding} que las redes siamesas calculan.
 \end{enumerate}
 
@@ -216,9 +216,9 @@ En último lugar, cabe destacar que estamos guardando los modelos entrenados en 
 
 Una red siamesa es una arquitectura en la que se tienen dos redes idénticas, con el objetivo que, dadas dos imágenes de entidades iguales, obtengan dos representaciones cercanas. Y al revés, dadas dos entidades distintas, se debe obtener dos representaciones distantes.
 
-Al trabajar con dos redes idénticas, lo que realmente manejamos es una única red que calcula representaciones de imágenes pasadas como entrada. Usaremos dicha red para calcular representaciones de pares o triples (en nuestro caso concretro, trabajaremos sobre todo con triples) de imágenes dadas como entrada.
+Al trabajar con dos redes idénticas, lo que realmente manejamos es una única red que calcula representaciones de imágenes pasadas como entrada. Usaremos dicha red para calcular representaciones de pares o triples (en nuestro caso concreto, trabajaremos sobre todo con triples) de imágenes dadas como entrada.
 
-Aclaramos lo que entendemos por representaciones cercanas y distantes. En primer lugar, la red calculará, dada una imagen de entrada $28\times28$, un embedding de la imagen. Esto es, una representación vectorial es un espacio $\mathbb{R}^d$ con $d << 28*28$ (ie. $d = 2$, $d = 4$, \ldots).
+Aclaramos lo que entendemos por representaciones cercanas y distantes. En primer lugar, la red calculará, dada una imagen de entrada $28\times28$, un \emph{embedding} de la imagen. Esto es, una representación vectorial es un espacio $\mathbb{R}^d$ con $d << 28*28$ (ie. $d = 2$, $d = 4$, \ldots).
 
 Con esto, dadas dos imágenes $x, y$, sus representaciones $ f_{\theta}(x),  f_{\theta}(y)$ serán cercanas cuando $$|| f_{\theta}(x) - f_{\theta}(y)||_2 \approx 0$$ Del mismo modo serán lejanas cuando $$|| f_{\theta}(x) - f_{\theta}(y)||_2 >> 0$$
 
@@ -254,9 +254,9 @@ Las redes siamesas se han usado sobre todo en tareas de reconocimiento de caras 
   \item Potencialmente, la red tiene pocos ejemplos de cada entidad de los que aprender.
 \end{itemize}
 
-En nuestra base de datos no se presentan las características fundamentales que hemos expuesto. La red se va a enfrentar a imágenes de clases que ya hemos visto previamente (fotografías nuevas de botas, por ejemplo. Pero la red ha sido entrenada con otras fotografias de otros tipos de botas). Además, tenemos muchos ejemplos de cada una de las diez clases con las que trabajamos.
+En nuestra base de datos no se presentan las características fundamentales que hemos expuesto. La red se va a enfrentar a imágenes de clases que ya hemos visto previamente (fotografías nuevas de botas, por ejemplo. Pero la red ha sido entrenada con otras fotografías de otros tipos de botas). Además, tenemos muchos ejemplos de cada una de las diez clases con las que trabajamos.
 
-Entonces, ¿por qué trabajamos con esta base de datos? En un primer momento, exploramos bases de datos más adecuadas para este problema, que no tuviésen que ver con el reconocimiento de caras o de firmas manuales. Por ejemplo, con una base de datos de figuras \emph{Lego} \cite{lego_database:online}. Sin embargo, esta base de datos era demasiado compleja, tal y como nos indicó el profesor de teoría de la asignatura (nos indicó el problema de que muchas figuras salían en posturas demasiado diferentes, como por ejemplo, de cara a la cámara y de espaldas). Nos encontramos con problemas parecidos buscando bases de datos más adecuadas a las características fundamentales presentadas previamente.
+Entonces, ¿por qué trabajamos con esta base de datos? En un primer momento, exploramos bases de datos más adecuadas para este problema, que no tuviesen que ver con el reconocimiento de caras o de firmas manuales. Por ejemplo, con una base de datos de figuras \emph{Lego} \cite{lego_database:online}. Sin embargo, esta base de datos era demasiado compleja, tal y como nos indicó el profesor de teoría de la asignatura (nos indicó el problema de que muchas figuras salían en posturas demasiado diferentes, como por ejemplo, de cara a la cámara y de espaldas). Nos encontramos con problemas parecidos buscando bases de datos más adecuadas a las características fundamentales presentadas previamente.
 
 Por tanto, escogemos usar esta base de datos porque, a pesar de no ser adecuado el uso de la arquitectura para este problema, podemos profundizar en todos los aspectos expuestos en \customcite{motivacion:seccion}. De hecho, y como se comentará más adelante, la base de datos ha supuesto una gran dificultad en lo que tiempos de entrenamiento se refiere. Con esto, dudamos mucho de haber sido capaces de realizar un estudio en una base de datos más adecuada teniendo en cuenta los recursos computacionales de los que disponemos (principalmente, los que \emph{Google Colab} nos otorga).
 
@@ -290,8 +290,6 @@ $$s = \frac{1}{n} \sum s(i)$$
 
 Cuando $s \approx 0$ significa que las fronteras entre los distintos clusters no están muy diferenciadas.
 
-% TODO -- hay que escribir esto
-
 \pagebreak
 
 \section{Entrenamiento usando triples aleatorios}
@@ -302,13 +300,13 @@ Para la creación de los triples aleatorios, diseñaremos un \lstinline{Dataset}
 
 En dicho \emph{dataset} definiremos un tamaño del conjunto de datos arbitrario. Podríamos considerar todos los triples del conjunto de datos. Pero esto supondría un \emph{dataset} de tamaño intratable. Además, dejaría de ser un conjunto con triples aleatorios y pasaría a ser un conjunto con todas las combinaciones de triples.
 
-Además de esto, el único detalle interesante es el pre-cómputo de las listas de índices en función de la clase. Es decir, tenemos acceso a los índices de las ímagenes de cada clase pre-computados, para que el cálculo de los triples sea más rápido.
+Además de esto, el único detalle interesante es el pre-cómputo de las listas de índices en función de la clase. Es decir, tenemos acceso a los índices de las imágenes de cada clase pre-computados, para que el cálculo de los triples sea más rápido.
 
 Una vez hecho esto, el bucle de entrenamiento es el usual. Pasamos a la red \emph{minibatches} conteniendo los triples, la red calcula su representación, y aplicamos la función de pérdida a cada triple. Dicha función de pérdida está implementada en la clase \lstinline{TripletLoss} y \lstinline{TripletLossCustom} (la última se encarga de manejar el error de todo un \emph{minibatch}).
 
-Utilizaremos para su entrenamiento minibatches de 32 triples y un total de 10 épocas.
+Utilizaremos para su entrenamiento \emph{minibatches} de 32 triples y un total de 10 épocas.
 
-Fijamos el tamaño del embedding a 2, y el margen a 0.001. Para optimizar el modelo usamos \emph{Adam} con un \emph{learning rate} inicial de 0.001. Esto porque en \customcite{hyperparameter_tuning:seccion}, hemos hecho una exploración de parámetros para el modelo que usa triples difíciles online, llegando a que los parámetros óptimos (para ese modelo) son dichos valores. Lo ideal habría sido realizar una exploración de parámetros para los triples aleatorios. Sin embargo, por tratarse del modelo que vamos a usar de base con el que comparar, y por lo lento del proceso de exploración de parámetros (esto lo comentaremos en \customcite{hyperparameter_tuning:seccion}), nos conformamos con los parámetros encontrados para el otro modelo.
+Fijamos el tamaño del \emph{embedding} a 2, y el margen a 0.001. Para optimizar el modelo usamos \emph{Adam} con un \emph{learning rate} inicial de 0.001. Esto porque en \customcite{hyperparameter_tuning:seccion}, hemos hecho una exploración de parámetros para el modelo que usa triples difíciles online, llegando a que los parámetros óptimos (para ese modelo) son dichos valores. Lo ideal habría sido realizar una exploración de parámetros para los triples aleatorios. Sin embargo, por tratarse del modelo que vamos a usar de base con el que comparar, y por lo lento del proceso de exploración de parámetros (esto lo comentaremos en \customcite{hyperparameter_tuning:seccion}), nos conformamos con los parámetros encontrados para el otro modelo.
 
 \pagebreak
 
@@ -322,7 +320,7 @@ La curva de aprendizaje se muestra en la siguiente gráfica:
     \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples aleatorios. En azul, la función de pérdida en entrenamiento. En naranja, la función de pérdida en validación}
 \end{figure}
 
-En dicha curva de aprendizaje se muetra un claro comportamiento errático en el aprendizaje. Esto puede deberse a los siguientes motivos:
+En dicha curva de aprendizaje se muestra un claro comportamiento errático en el aprendizaje. Esto puede deberse a los siguientes motivos:
 
 \begin{itemize}
   \item El valor del \emph{learning rate} es demasiado alto y por eso el ajuste del error con \emph{back propagation} provoca dicho comportamiento errático
@@ -378,7 +376,7 @@ Nos aprovechamos de los cálculos que realizamos en la adaptación del modelo a 
 
 Como se puede ver en el gráfico anterior, las distintas clases se hallan muy juntas entre sí y entremezcladas, sin una separación clara por clase, por lo que la red no está separando correctamente las distintas clases del dataset. Este comportamiento era esperable debido a los malos resultados obtenidos previamente en el entrenamiento, y que mostrábamos en \customcite{resultados_entrenamiento:seccion}
 
-Por otra parte, si ahora extraemos algunas métricas como son el Accurcy del clasificador, el Área bajo la curva ROC o la métrica Silohuette sobre el modelo de clasificación KNN obtenemos lo siguiente:
+Por otra parte, si ahora extraemos algunas métricas como son el \emph{accuracy} del clasificador, el Área bajo la curva ROC o la métrica Silohuette sobre el modelo de clasificación KNN obtenemos lo siguiente:
 
 \begin{table}[H]
 \begin{center}
@@ -427,7 +425,7 @@ Para ello, realizaremos un bucle clásico de entrenamiento:
   \item Propagamos hacia atrás la pérdida
 \end{enumerate}
 
-Si en los triples aleatorios definíamos un \emph{dataset} para manejar los triples, en este caso usaremos una función de péridda de \lstinline{Pytorch} para dicho manejo de los triples. Esta función de pérdida la definimos en la clase \lstinline{OnlineTripletLoss}.
+Si en los triples aleatorios definíamos un \emph{dataset} para manejar los triples, en este caso usaremos una función de pérdida de \lstinline{Pytorch} para dicho manejo de los triples. Esta función de pérdida la definimos en la clase \lstinline{OnlineTripletLoss}.
 
 La estrategia es la siguiente. Por cada imagen del \emph{batch}, calcularemos su triple más difícil dentro de dicho \emph{batch}. Es decir, consideramos una a una las imágenes del \emph{batch} como anclas. Dada un ancla, buscamos la imagen del \emph{batch} de la misma clase más alejada (positivo difícil), y la imagen de distinta clase más cercana (negativo difícil). Con este triple difícil calculamos el \emph{Triplet Loss}. Devolvemos la media de las pérdidas por cada triple.
 
@@ -607,7 +605,7 @@ Por lo demás el resto de etapas de entrenamiento y posterior adaptación a un m
 
 De nuevo, y como ya hemos comentado, por falta de tiempo no realizamos \emph{Hyperparameter Tuning} con \emph{Cross Validation} para este nuevo modelo, que habría sido lo ideal. Por ello, decidimos nosotros los parámetros que vamos a emplear.
 
-Con esta nueva arquitectura decidimos mantener el \emph{learning rate} del modelo anterior. En el \emph{hyperparameter tuning} anterior vimos que variar este parámetro no era muy significativo. Además, estuvimos explorando el efecto del margen en el error que se obtenía durante el proceso de etrenamiento. Llegamos a la conclusión de que este error era siempre menor cuanto más pequeño fuera el valor del margin y que no se producía overfitting. Por tanto, decidimos establecer como valor final para el margen $10^{-5}$.
+Con esta nueva arquitectura decidimos mantener el \emph{learning rate} del modelo anterior. En el \emph{hyperparameter tuning} anterior vimos que variar este parámetro no era muy significativo. Además, estuvimos explorando el efecto del margen en el error que se obtenía durante el proceso de entrenamiento. Llegamos a la conclusión de que este error era siempre menor cuanto más pequeño fuera el valor del margin y que no se producía overfitting. Por tanto, decidimos establecer como valor final para el margen $10^{-5}$.
 
 \subsection{Resultados del entrenamiento}
 
@@ -623,7 +621,7 @@ Podemos ver que la red no comete sobreajuste, a pesar de que no hemos incluido e
 
 Hemos entrenado la red durante tres épocas, lo hemos considerado así debido a la gran rapidez con la que desciende el error  al comienzo y porque tras la primera época la variación es mínima, por lo que entrenar durante más tiempo no iba a suponer una mejora considerable. En la curva de aprendizaje se ve claramente que a partir de los 40 primeros \emph{batches} no hay mejora alguna.
 
-Por otra parte, tras el entrenamiento, se obtiene un error en el cojunto de Test de $8.61 \times 10^{-6}$, que nos confirma que no ha habido sobreajuste en el entrenamiento, como ya sospechábamos por los resultados mostrados en la curva de aprendizaje.
+Por otra parte, tras el entrenamiento, se obtiene un error en el conjunto de Test de $8.61 \times 10^{-6}$, que nos confirma que no ha habido sobreajuste en el entrenamiento, como ya sospechábamos por los resultados mostrados en la curva de aprendizaje.
 
 \subsubsection{Resultados de clasificación}
 

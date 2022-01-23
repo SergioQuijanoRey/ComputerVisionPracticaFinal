@@ -317,7 +317,7 @@ La curva de aprendizaje se muestra en la siguiente gráfica:
 \begin{figure}[H]
     \centering
     \includegraphics[width = 0.4 \textwidth]{random_curva_aprendizaje}
-    \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples aleatorios. En azul, la función de pérdida en entrenamiento. En naranja, la función de pérdida en validación}
+    \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples aleatorios. En azul, la función de pérdida en entrenamiento. En naranja, la función de pérdida en validación. En el eje $x$ mostramos las veces que se calculan las métricas, que corresponden con 10 \emph{batches}}
 \end{figure}
 
 En dicha curva de aprendizaje se muestra un claro comportamiento errático en el aprendizaje. Esto puede deberse a los siguientes motivos:
@@ -333,7 +333,7 @@ Comprobamos que no hemos usado pocas épocas entrenando durante 50, en vez de 10
 \begin{figure}[H]
     \centering
     \includegraphics[width = 0.4 \textwidth]{random_curva_aprendizaje_larga}
-    \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples aleatorios. En este caso, en vez de entrenar durante 10 épocas, entrenamos durante 50}
+    \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples aleatorios. En este caso, en vez de entrenar durante 10 épocas, entrenamos durante 50. En el eje $x$ mostramos las veces que se calculan las métricas, que corresponden con 10 \emph{batches}}
 \end{figure}
 
 Seguimos observando el mismo comportamiento errático, y por tanto, descartamos que dicho comportamiento se explique por el uso de insuficientes épocas en el entrenamiento. Respecto al \emph{learning rate}, mostramos ahora el resultado de entrenar durante 10 épocas con un \emph{learning rate} mucho más bajo (en concreto, $0.0001$). La curva de aprendizaje en este caso es la siguiente:
@@ -341,7 +341,7 @@ Seguimos observando el mismo comportamiento errático, y por tanto, descartamos 
 \begin{figure}[H]
     \centering
     \includegraphics[width = 0.4 \textwidth]{random_curva_aprendizaje_lrbajo}
-    \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples aleatorios. En este caso, en vez de entrenar usando un \emph{learning rate} de 0.001, usamos 0.0001. De nuevo, estamos entrenando durante 10 épocas}
+    \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples aleatorios. En este caso, en vez de entrenar usando un \emph{learning rate} de 0.001, usamos 0.0001. De nuevo, estamos entrenando durante 10 épocas.En el eje $x$ mostramos las veces que se calculan las métricas, que corresponden con 10 \emph{batches}}
 \end{figure}
 
 El comportamiento errático sigue mostrándose con claridad. Por tanto, descartamos las dos primeras hipótesis para explicar el comportamiento errático, y consideramos la más probable la última: el uso de triples aleatorios no es adecuado para la optimización de la red.

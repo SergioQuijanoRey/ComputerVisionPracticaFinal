@@ -144,20 +144,22 @@
 \addtocontents{toc}{\setcounter{tocdepth}{-10}}
 \listoffigures
 
-% TODO -- no tenemos cuadros en esta memoria
 \listoftables
 
-% TODO -- tampoco tenemos codigos de relevancia
 % \lstlistoflistings
 \addtocontents{toc}{\setcounter{tocdepth}{3}}
 
 \pagebreak
 
+\section{Abstract}
+
+En este proyecto nos proponemos profundizar en el conocimiento de las Redes Siamesas y su funcionamiento para un problema de clasificación multiclase con KNN. Para el entrenamiento de la red emplearemos la función de error Triplet Loss y probaremos distintas técnicas de elección de triples, en concreto usaremos tripes aleatorios y triples \entrecomillado{difíciles} online. Por otra parte probaremos distintas arquitecturas para la red comenzando con una ResNet-18 de complejidad mucho mayor a la de la base datos y posteriormente usaremos una red mucho más sencilla que hemos denominado Light Model con la que mejoraremos sustancialmente los resultados obtenidos hasta el momento.
+
 \section{Introducción}
 
 \subsection{Problema a resolver}
 
-En esta práctica vamos a trabajar con el uso de redes siamesas y la función de pérdida \emph{Triplet Loss}. Por tanto, calcularemos un \emph{embedding} de la base de datos. Adaptaremos dicha red para realizar una tarea de clasificación usando el algoritmo \emph{k-NN}.
+En esta práctica vamos a trabajar con el uso de redes siamesas y la función de pérdida \emph{Triplet Loss}. Por tanto, calcularemos un \emph{embedding} de la base d y probaremos distintas técnicas de elección de triples como son los tripes aleatorios ptaremos dicha red para realizar una tarea de clasificación usando el algoritmo \emph{k-NN}.
 
 Realizaremos dos experimentos. El primero de ellos basado en el entrenamiento de la red usando triples aleatorios. El segundo, basado en el entrenamiento de la red usando triples difíciles, calculados de forma \emph{online} por cada \emph{minibatch}.
 
@@ -202,6 +204,7 @@ Además, al estar usando \lstinline{Pytorch} como librería principal, hemos ten
   \item Un \emph{notebook} \lstinline{Notebook.ipynb}, en el que realizamos todo el trabajo interesante. Por ejemplo, aquí definimos todos los hiperparámetros que usamos finalmente, las funciones de pérdida usadas, la forma de calcular los triples, la evaluación del modelo, \ldots
 \end{itemize}
 
+En último lugar, cabe destacar que estamos guardando los modelos entrenados en disco. Esto lo controlamos con el parámetro global \lstinline{USE_CACHED_MODEL}, en la sección de hiperparámetros. Cuando esta variable vale \lstinline{False}, se realiza el entrenamiento de los modelos y se guardan en memoria. Cuando la variable vale \lstinline{True}, no se realiza el entrenamiento y se cargan los modelos desde disco. Esto ha sido crítico para poder realizar experimentaciones rápidas sin tener que volver a entrenar una y otra vez los mismos modelos bajo las mismas condiciones. Además, cuando nos hemos encontrado con problemas con el consumo de memoria \emph{GPU}, entrenar, reiniciar y cargar el modelo desde disco ha sido una solución temporal (finalmente resolvimos estos problemas por otro camino, usando adecuadamente la instrucción \lstinline{torch.no_grad()})
 
 \pagebreak
 
@@ -263,6 +266,28 @@ Una posible mejora que no exploramos por falta de tiempo es realizar el entrenam
 
 \subsection{Métrica \emph{Silhouette}}
 
+Usaremos esta métrica para medir la calidad de los clusters obtenidos con los modelos entrenados. Una buena clusterización es aquella en la que los elementos del mismo cluster están muy cerca entre sí (distancia intra-cluster pequeña) y los elementos de clusters distintos están lejos entre sí (distancia inter-cluster grande). Todo esto se resume en esta métrica.
+
+Dado un punto $i$, definimos su índice de Silhouette $s(i)$ como:
+
+$$s(i) := \frac{b(i) - a(i)}{max\{a(i), b(i)\}}$$
+
+donde $a(i)$ es la distancia media del punto $i$ al resto de puntos del mismo cluster
+
+$$a(i) := \frac{1}{|C_i|} \sum_{j \in C_i} d(i, j)$$
+
+y $b(i)$ es la mínima distancia del punto $i$ a un punto de un cluster distinto:
+
+$$b(i) := \min_{j \in C_k ; C_k \neq C_i} d(i, j)$$ 
+
+Al ser $a(i), b(i)$ reales positivos, es claro que $s(i) \in [-1, 1]$. Como queremos que $a(i)$ sea pequeño y $b(i)$ sea grande, el mejor valor para $s(i)$ es $1$. 
+
+Una vez que hemos definido el índice de Silhouette para un punto, definimos la métrica de Silhouette para toda una clusterización como la media de los índices de Silhouette punto a punto:
+
+$$s = \frac{1}{n} \sum s(i)$$
+
+Cuando $s \approx 0$ significa que las fronteras entre los distintos clusters no están muy diferenciadas.
+
 % TODO -- hay que escribir esto
 
 \pagebreak
@@ -286,8 +311,6 @@ Fijamos el tamaño del embedding a 2, y el margen a 0.001. Para optimizar el mod
 \pagebreak
 
 \subsection{Resultados del entrenamiento} \label{resultados_entrenamiento:seccion}
-
-% TODO -- hay que escribir estos resultados
 
 La curva de aprendizaje se muestra en la siguiente gráfica:
 
@@ -443,21 +466,190 @@ $$\frac{10 \:  min * 7 \: epocas * 4 \: folds * 27 \: parametros}{60 \: min * 24
 
 Podemos ver que sigue siendo un tiempo intratable. Sin embargo, disponemos de dos cuentas de \emph{Google Colab} para explorar en paralelo, por lo que el tiempo se reduce a $2.625$ días, aproximadamente. Lo seguimos considerando un tiempo no razonable, pero durante el proceso de exploración supervisamos los resultados para podar ciertas zonas de exploración poco prometedoras de forma manual. Con ello, todo el conjunto de parámetros explorados y sus resultados se muestran en la siguiente tabla:
 
+\begin{table}[H]
+    \centering
+    \begin{tabular}{|l|l|l|l|}
+    \hline
+        Embedding Dimension & Learning Rate & Margin & Loss \\ \hline
+        2 & 0.0001 & 0.01 & 0.007372344437 \\ 
+        2 & 0.0001 & 1 & 0.4078908339 \\ 
+        3 & 0.0001 & 1 & 0.354682561 \\ 
+        2 & 0.0001 & 0.1 & 0.04381236387 \\ 
+        3 & 0.0001 & 0.1 & 0.05420429958 \\ 
+        4 & 0.0001 & 1 & 0.3357170224 \\ 
+        2 & 0.0001 & 0.001 & 0.01420788498 \\ 
+        2 & 0.001 & 1 & 0.344632715 \\ 
+        3 & 0.0001 & 0.001 & 0.0181999413 \\ 
+        4 & 0.0001 & 0.001 & 0.01199295989 \\ 
+        2 & 0.001 & 0.001 & 0.001895822257 \\ 
+        3 & 0.001 & 0.001 & 0.001268613858 \\ 
+        4 & 0.001 & 0.001 & 0.001237501063 \\ 
+        \textbf{2} & \textbf{0.01} & \textbf{0.001} & \textbf{0.0007436529413} \\ 
+        3 & 0.01 & 0.001 & 0.006536031724 \\ 
+        4 & 0.01 & 0.001 & 0.001353246829 \\ 
+        3 & 0.0001 & 0.01 & 0.02716585406 \\ 
+      \hline
+    \end{tabular}
+    \caption{Resultados de la exploración de hiperparámetros usando \emph{4-fold Cross Validation}. En negrita, la combinación de parámetros que mejor resultados proporciona}
+\end{table}
+
+Como vemos en la anterior tabla, la mejor combinación de parámetros es la siguiente:
+
+\begin{itemize}
+  \item Margen: $0.001$
+  \item \emph{Learning Rate}: $0.01$
+  \item Dimensión del \emph{embedding}: $2$
+\end{itemize}
 
 \subsection{Resultados del entrenamiento}
 
-\subsection{Adaptación a una tarea de clasificación}
-
 \subsubsection{Resultados de clasificación}
 
-De la misma forma que se hizo en el caso de triples aleatorios creamos un clasificador utilizando kNN con $k = 3$.
+\subsection{Conclusiones} \label{triples_online_resultados:seccion}
 
-\subsection{Conclusiones}
+Como hemos podido observar en este experimento, los resultados han mejorado algo en comparación con el modelo entrenado con Triples aleatorios, (estamos triplicando prácticamente el \emph{accuracy} del modelo) pero siguen siendo muy pobres y claramente no se podría tomar como una solución al problema de clasificación multiclase planteado. 
+
+Ante estos resultados nos vemos obligados de nuevo a cambiar la estrategia, como comentamos en \customcite{triples_light_motivacion:seccion}. 
 
 
 \pagebreak
 
+\section{Entrenamiento usando una red mucho más simple}
+
+\subsection{Motivación} \label{triples_light_motivacion:seccion}
+
+Los malos resultados que ya hemos comentado en \customcite{triples_online_resultados:seccion} nos fuerza a buscar posibles mejoras al modelo entrenado. Probamos en el último momento con una arquitectura de red mucho más simple. Esto lo hacemos siguiendo nuestra intuición, pues el conjunto de datos es relativamente sencillo (no deja de ser una alternativa al famoso conjunto de datos \emph{MNIST}). Y como comentaremos más adelante, conseguimos resultados mucho mejores con esta alternativa. 
+
+Al haber explorado esta alternativa en el último momento, no tenemos tiempo para realizar todos los experimentos que habríamos considerado ideales. Entre ellos, haber realizado pruebas con la arquitectura de red (hemos usado la primera red que planteamos, no usamos técnicas de regularización sobre la red, por ejemplo), haber realizado exploración de los hiperparámetros con \emph{Cross Validation}, \ldots
+
+\subsection{Detalles de implementación}
+
+Para este nuevo enfoque al problema hemos creado una CNN mucho más simple que la que estábamos utilizando hasta el momento que hemos denominado \emph{LightModel}. La arquitectura de dicha red se muestra en la siguiente tabla:
+
+\begin{table}[H]
+\begin{center}
+    
+    \begin{tabular}{|c|c|c|c|}
+        \hline
+        Layer number & Layer Type & kernel size &  Input $|$ Output channels or neurons \\
+        \hline
+        1 & Conv2D & 3 & 1 $|$ 4 \\ 
+        2 & Relu & - & - \\
+        3 & Conv2D & 3 & 4 $|$ 8 \\ 
+        4 & Relu & - & - \\
+        5 & Conv2D & 3 & 8 $|$ 16 \\ 
+        6 & Relu & - & - \\
+        7 & Conv2D & 3 & 16 $|$ 32 \\ 
+        8 & Relu & - & - \\
+        9 & MaxPooling & 2 & - \\
+        10 & Flatten & - & 32 $|$ 1 \\
+        11 & Dense & - & 3200 $|$ 2 \\
+    \hline
+    \end{tabular}
+\end{center}
+    \caption{Descripción de la arquitectura del modelo \emph{LightModel}}
+\end{table}
+
+Como ya hemos comentado, esta es la primera arquitectura que diseñamos, y con la que conseguimos buenos resultados. Lo ideal habría sido probar con distintas modificaciones en la arquitectura para refinarla. Sin embargo, por falta de tiempo, nos conformamos con esta primera propuesta que da buenos resultados.
+
+Por lo demás el resto de etapas de entrenamiento y posterior adaptación a un modelo de clasificación KNN serán iguales al las del los modelos anteriores, y por tanto, no volvemos a explicar este proceso. 
+
+\subsection{\emph{Hyperparameter tuning}} 
+
+De nuevo, y como ya hemos comentado, por falta de tiempo no realizamos \emph{Hyperparameter Tuning} con \emph{Cross Validation} para este nuevo modelo, que habría sido lo ideal. Por ello, decidimos nosotros los parámetros que vamos a emplear.
+
+Con esta nueva arquitectura decidimos mantener el \emph{learning rate} del modelo anterior. En el \emph{hyperparameter tuning} anterior vimos que variar este parámetro no era muy significativo. Además, estuvimos explorando el efecto del margen en el error que se obtenía durante el proceso de etrenamiento. Llegamos a la conclusión de que este error era siempre menor cuanto más pequeño fuera el valor del margin y que no se producía overfitting. Por tanto, decidimos establecer como valor final para el margen $10^{-5}$. 
+
+\subsection{Resultados del entrenamiento}
+
+Comenzamos mostrando la curva de aprendizaje obtenida, en la siguiente figura:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.5 \textwidth]{triples_light_curva_aprendizje}
+    \caption{Curva de aprendizaje para el entrenamiento del modelo usando triples difíciles \emph{online}. Además, usamos la nueva arquitectura de red. En azul, la función de pérdida en entrenamiento. En naranja, la función de pérdida en validación. En el eje $x$ mostramos las veces que se calculan las métricas, que corresponden con 10 \emph{batches}}
+\end{figure}
+
+Podemos ver que la red no comete sobreajuste, a pesar de que no hemos incluido elementos para tratar el sobre-aprendizaje en la arquitectura. Sin embargo, gracias a la simplicidad de la arquitectura, esto no supone un problema. 
+
+Hemos entrenado la red durante tres épocas, lo hemos considerado así debido a la gran rapidez con la que desciende el error  al comienzo y porque tras la primera época la variación es mínima, por lo que entrenar durante más tiempo no iba a suponer una mejora considerable. En la curva de aprendizaje se ve claramente que a partir de los 40 primeros \emph{batches} no hay mejora alguna.
+
+Por otra parte, tras el entrenamiento, se obtiene un error en el cojunto de Test de $8.61 \times 10^{-6}$, que nos confirma que no ha habido sobreajuste en el entrenamiento, como ya sospechábamos por los resultados mostrados en la curva de aprendizaje. 
+
+\subsubsection{Resultados de clasificación}
+
+Comenzamos mostrando, como hacíamos en secciones anteriores, la gráfica del \emph{embedding} obtenido:
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width = 0.5 \textwidth]{triples_light_embedding}
+    \caption{Gráfica del \emph{embedding} calculado por la red sobre el conjunto de entrenamiento. Los colores muestran la clase asociada a cada uno de los puntos que mostramos}
+\end{figure}
+
+Como se puede observar las clases se encuentran mejor separadas entre sí que en los modelos anteriores, aunque sigue habiendo cierto grado de solapamiento entre clases. Es más, hay ciertas clases que parecen mezclarse con otras, 
+
+Mostramos ahora las matrices de confusión, pues puede ser que la red esté confundiendo clases que son parecidas (como con los distintos tipos de zapatos).
+
+\begin{figure}[H]
+    \centering
+
+    \begin{subfigure}[b]{0.45 \textwidth}
+        \includegraphics[width = 0.9 \textwidth]{triples_light_matrconf_entrenamiento}
+        \caption{Conjunto de entrenamiento}
+    \end{subfigure}
+    \begin{subfigure}[b]{0.45 \textwidth}
+        \includegraphics[width = 0.9 \textwidth]{triples_light_matrconf_test}
+        \caption{Conjunto de test}
+    \end{subfigure}
+
+    \caption{Matrices de confusión obtenidas en la adaptación a la tarea de clasificación}
+\end{figure}
+
+Podemos observar que las dos primeras clases son bien distinguidas por la red entrenada. Sin embargo, en el resto de clases, no tenemos tanta precisión. Es destacable la confusión que tiene la red entre las clases 5, 7 y 9. Estas clases se corresponden con las sandalias, zapatillas tipo \emph{sneakers} y botas. Por tanto, la red tiene problemas para distinguir estos tres tipos de calzados.
+
+Finalmente, mostramos las mismas métricas que hemos calculado en los modelos previos en la siguiente tabla: 
+
+\begin{table}[H]
+  \begin{center}
+      \begin{tabular}{|c|c|c|c|}
+          \hline
+          Dataset & Accuracy & Área bajo la curva ROC & Silhouette \\
+          \hline
+          train & 0.51175 &  0.8476 & -0.0157\\
+          test & 0.4101 & 0.7588 &  -0.0159 \\
+          \hline
+      \end{tabular}
+  \end{center}
+     \caption{Métricas adicionales del modelo ligero}
+  \end{table}
+
+Como se puede ver, el \emph{accuracy} mejora considerablemente con respecto a los modelos anteriores, logrando un 41 \% en el conjunto de \emph{test}. Además el \emph{área bajo la curva roc} también experimenta una mejora considerable, pues alcanza un $0.7588$ en \emph{test}, lo que nos indica que comienza a ser un mejor clasificador que los modelos anteriores. Como era de esperar, pues hemos visto que las clases están muy solapadas, el valor de \emph{Silhouette} es muy malo (cercano a cero)
+
+\subsection{Conclusiones}
+
+En primer lugar, el modelo planteado logra una mejora considerable respecto de los dos modelos previos. Sin embargo, los resultados siguen sin ser satisfactorios, y no podemos considerar el resultado obtenido como una solución al problema planteado.
+
+En segundo lugar, consideramos que con esta alternativa se abre una nueva línea a investigar con la que se podría llegar a obtener un clasificador apropiado si se elige una arquitectura mejor de red ( manteniendo la simplicidad) o haciendo una búsqueda exhaustiva de los distintos hiperparámetros como se hizo con el modelo anterior. De tener el tiempo suficiente exploraríamos esta línea al parecernos la más prometedora.
+
+Finalmente, podemos concluir que es fundamental adecuar la complejidad de la arquitectura de red a la complejidad del \emph{dataset} con el que se trabaja. Uno de los errores que hemos cometido en esta práctica ha sido trabajar con \emph{ResNet-18}, una arquitectura demasiado compleja para el problema a resolver. Por tanto, y a pesar de ser una red pre-entrenada, nos ha hecho perder mucho tiempo sin ofrecer resultados satisfactorios.
+
+\pagebreak
+
 \section{Conclusiones}
+
+Finalmente, a modo de resumen de todas las conclusiones que se han obtenido hasta el momento: 
+
+En primer lugar, nuestra hipótesis inicial sobre el uso de triples aleatorios queda confirmada. Es una técnica rápida para la generación de triples pero que no da buenos resultados, y por tanto es inútil más allá de servir como \emph{baseline} con el que comparar futuros modelos.
+
+En segundo lugar, el uso de triples difíciles \emph{online} mejoró sustancialmente el modelo. Una buena selección de triples es clave para que la red mejore efectivamente. Además, la estrategia \emph{online} nos permite tanto seleccionar triples de forma relativamente rápida como equilibrar la dificultad de los triples escogidos. 
+
+Sin embargo, vemos que aunque haya una mejora sustancial, no es suficiente. Al menos en la adaptación de la red a clasificación multiclase. Por tanto, buscamos mejorar los resultados de nuestro modelo, llegando a la conclusión de que es conveniente el uso de una red definida por nosotros, ligera y sin pre-entrenar.
+
+Con esta red, mucho más simple, obtenemos unos resultados todavía mejores, en todas las métricas. Por tanto, aunque en general no sea una buena idea entrenar de cero un modelo, debido a la simplicidad de la base de datos es algo positivo: adecuamos la complejidad del modelo a las características de la base de datos y el entrenamiento desde cero no supone demasiado tiempo de cómputo. A pesar de esto, la red no obtiene unos resultados aceptables cuando realizamos la adaptación a clasificación. 
+
+Un problema que hemos comentado previamente es todo el tiempo que hemos dedicado a la exploración de parámetros y optimización del modelo que usaba como base \emph{ResNet-18}. Si todo ese tiempo lo hubiésemos dedicado a mejorar la arquitectura de la red simple, a explorar sus parámetros y a mejorar el entrenamiento, estamos bastante convencidos que habríamos obtenido resultados mucho mejores.
+
+Y para finalizar, en todos los casos hemos visto que, a pesar de obtener \emph{embeddings} aceptables, siempre ha habido una claro solapamiento entre las distintas clases. Una posible solución para este problema, que nos planteamos pero que no nos ha dado tiempo a implementar, es el uso de un margen adaptativo. Esto es, comenzar con un margen bajo y, con el paso de las épocas de entrenamiento, aumentarlo para forzar a que la red separe las distintas clases. De conseguir esto, pensamos que los resultados en la adaptación a clasificación habrían sido sustancialmente mejores.
 
 \pagebreak
 
